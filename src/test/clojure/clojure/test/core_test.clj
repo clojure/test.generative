@@ -46,6 +46,18 @@
   [m default]
   (eval (map->case-src m default)))
 
+(defn map->cond-src
+  [m default]
+  (list 'fn '[input]
+        (apply list 'cond 
+               (concat (mapcat (fn [[k v]] [(list '= 'input (list 'quote k))
+                                           (list 'quote v)]) m)
+                       [:else default]))))
+
+(defn map->cond-fn
+  [m default]
+  (eval (map->cond-src m default)))
+
 (defn case-test-constant
   "Generate a test constant that might appear in a case expression."
   []
@@ -62,6 +74,16 @@
     (assert= (% k) (case-map k) k))
   (doseq [k (range 100)]
     (when-not (contains? case-map k)
+      (assert= (% k) default k))))
+
+(defspec cond-spec
+  map->cond-fn
+  [^{:tag (hash-map `case-test-constant long)} cond-map
+   ^keyword default]
+  (doseq [k (keys cond-map)]
+    (assert= (% k) (cond-map k) k))
+  (doseq [k (range 100)]
+    (when-not (contains? cond-map k)
       (assert= (% k) default k))))
 
 (defn encountered-in-walk
