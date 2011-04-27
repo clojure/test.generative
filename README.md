@@ -7,11 +7,18 @@ This API will change. You have been warned.
 
 See the namespace comment for clojure.test.generative.
 
-### "Installation"
+## Installation
 
-Requires development edge of Clojure 1.3. 
-You will need to set clojure.home in your maven .m2/settings.xml.
-test.generative is not yet available in Maven Central.
+test.generative is not yet available in Maven Central. To build
+
+    mvn package
+
+## Running Examples
+
+    mvn dependency:build-classpath -Dmdep.outputFile=script/maven-classpath
+    script/examples
+
+Note the examples will fail until http://dev.clojure.org/jira/browse/CLJ-426 is fixed!
 
 ## License
 

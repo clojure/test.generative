@@ -1,0 +1,7 @@
+#!/bin/sh
+# Note: First you must run mvn dependency:build-classpath -Dmdep.outputFile=script/maven-classpath 
+CLASSPATH=src/main/clojure:src/test/clojure:src/examples/clojure:`cat script/maven-classpath`
+
+java -server -Xmx2GB -cp $CLASSPATH clojure.main -i script/examples.clj
+
+
