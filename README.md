@@ -9,7 +9,8 @@ See the namespace comment for clojure.test.generative.
 
 ### "Installation"
 
-Requires development edge of Clojure 1.3.
+Requires development edge of Clojure 1.3. 
+You will need to set clojure.home in your maven .m2/settings.xml.
 test.generative is not yet available in Maven Central.
 
 ## License

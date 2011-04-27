@@ -142,7 +142,7 @@ one of the built-in generators:
 
 "}
     clojure.test.generative
-  (:use [clojure.contrib.find-namespaces :only (find-namespaces-in-dir)]
+  (:use [clojure.tools.namespace :only (find-namespaces-in-dir)]
         [clojure.pprint :only (pprint)]
         [clojure.walk :only (prewalk)])
   (:require [clojure.test.generative.generators :as gen]))
