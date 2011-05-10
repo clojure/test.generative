@@ -47,25 +47,25 @@ instance you can get a repeatable basis for tests."
 
 (defn geometric
   "Geometric distribution with mean 1/p."
-  [p]
+  ^long [p]
   (core/long (Math/ceil (/ (Math/log (.nextDouble *rnd*))
                            (Math/log (- 1.0 p))))))
 
 (defn uniform
   "Uniform distribution from lo (inclusive) to high (exclusive).
    Defaults to range of Java long."
-  ([] (.nextLong *rnd*))
-  ([lo hi] {:pre [(< lo hi)]}
-     (clojure.core/long (Math/floor (+ lo (* (.nextDouble *rnd*) (- hi lo)))))))
+  (^long [] (.nextLong *rnd*))
+  (^long[lo hi] {:pre [(< lo hi)]}
+         (clojure.core/long (Math/floor (+ lo (* (.nextDouble *rnd*) (- hi lo)))))))
 
-(defn ^float float
+(defn float
   "Generate a float."
-  []
+  ^double []
   (Float/intBitsToFloat (.nextInt *rnd*)))
 
-(defn ^double double
+(defn double
   "Generate a double."
-  []
+  ^double []
   (.nextDouble *rnd*))
 
 (defn rand-nth
@@ -102,7 +102,7 @@ instance you can get a repeatable basis for tests."
    of the framework (and subject to change!)
    If you want to explicitly control the distribution, use one of the
    distribution fns, e.g. uniform, geometric, etc."
-  []
+  ^long []
   (one-of
    (uniform -2 3)
    uniform))
@@ -112,18 +112,18 @@ instance you can get a repeatable basis for tests."
    convenience of the framework (and subject to change!)
    If you want to explicitly control the distribution, use one of the
    distribution fns, e.g. uniform, geometric, etc."
-  ([] (unsigned-long Long/MAX_VALUE))
-  ([upper] {:pre [(pos? upper)]}
-     (one-of
-       (uniform 0 (min 3 upper))
-       (uniform 0 upper))))
+  (^long [] (unsigned-long Long/MAX_VALUE))
+  (^long [upper] {:pre [(pos? upper)]}
+         (one-of
+          (uniform 0 (min 3 upper))
+          (uniform 0 upper))))
 
-(defn ^byte byte
+(defn byte
   "Returns a random long in the byte range."
-  []
+  ^long []
   (uniform Byte/MIN_VALUE (inc (core/int Byte/MAX_VALUE))))
 
-(defn ^bool bool
+(defn bool
   "Returns a random bool."
   []
   (< (.nextDouble *rnd*) 0.5))
@@ -206,10 +206,8 @@ instance you can get a repeatable basis for tests."
 (defn string
   "Create a string with chars from v and sized from sizer."
   ([] (string printable-ascii-char))
-  ([f]
-     (string f default-sizer))
-  ([f sizer]
-     (apply str (reps sizer f))))
+  ([f] (string f default-sizer))
+  ([f sizer] (apply str (reps sizer f))))
 
 (def ^:private ascii-alpha
   (concat (range 65 (+ 65 26))
