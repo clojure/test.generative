@@ -65,7 +65,7 @@ call generate-test-data.
   
 Common scalar generators:
 
-  bool byte long unsigned-long printable-ascii-char string
+  bool byte long printable-ascii-char string
   symbol keyword
   scalar (chooses scalar type at random)  
 

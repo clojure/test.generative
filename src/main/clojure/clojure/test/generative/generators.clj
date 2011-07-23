@@ -10,8 +10,9 @@
 (ns ^{:author "Stuart Halloway"
       :doc "Generators for clojure.test.generative.
 
-The functions in this namespace define the DSL for generator specs. You do not want to
-use this namespace directly in most cases, because
+The functions in this namespace define the DSL for generator
+specs. You do not want to use this namespace directly in most
+cases, because
 
 1. Spec compilation uses these fns for you automatically.
 2. There are lot of collisions with clojure.core!"}
@@ -69,7 +70,7 @@ instance you can get a repeatable basis for tests."
   (.nextDouble *rnd*))
 
 (defn rand-nth
-  "Replacement of core/rand-nth that gives us control of the
+  "Replacement of core/rand-nth that allows control of the
    randomization basis (through binding *seed*)."
   [coll]
   (nth coll (uniform 0 (count coll))))
@@ -97,26 +98,9 @@ instance you can get a repeatable basis for tests."
   ([& specs]
      (weighted (zipmap specs (repeat 1)))))
 
-(defn long
-  "Returns random longs from a distribution hacked for the convenience
-   of the framework (and subject to change!)
-   If you want to explicitly control the distribution, use one of the
-   distribution fns, e.g. uniform, geometric, etc."
-  ^long []
-  (one-of
-   (uniform -2 3)
-   uniform))
-
-(defn unsigned-long
-  "Returns random unsigned longs from a distribution hacked for the
-   convenience of the framework (and subject to change!)
-   If you want to explicitly control the distribution, use one of the
-   distribution fns, e.g. uniform, geometric, etc."
-  (^long [] (unsigned-long Long/MAX_VALUE))
-  (^long [upper] {:pre [(pos? upper)]}
-         (one-of
-          (uniform 0 (min 3 upper))
-          (uniform 0 upper))))
+(def long
+  "Returns a random long. Same as uniform."
+  uniform)
 
 (defn byte
   "Returns a random long in the byte range."
@@ -128,17 +112,15 @@ instance you can get a repeatable basis for tests."
   []
   (< (.nextDouble *rnd*) 0.5))
 
-(let [helper #(uniform 0 96)]
-  (defn printable-ascii-char
-    "Returns a random printable ascii character."
-    []
-    (core/char (+ 32 (helper)))))
+(defn printable-ascii-char
+  "Returns a random printable ascii character."
+  []
+  (core/char (uniform 32 128)))
 
-(let [helper #(uniform 0 65536)]
-  (defn char
-    "Returns a random character in the range 0-65536."
-    []
-    (core/char (helper))))
+(defn char
+  "Returns a random character in the range 0-65536."
+  []
+  (core/char (uniform 0 65536)))
 
 (defn default-sizer
   "Default sizer used to run tests. If you want a specific distribution,
