@@ -318,7 +318,7 @@ one of the built-in generators:
   (into [] (range 42 (+ 1024 42))))
 
 (defn- spec-name
-  [s]
+  [^clojure.lang.Var s]
   (resolve (symbol (str (.getName (.ns s)) "/" (.sym s)))))
 
 (defn- var-specs
@@ -334,7 +334,7 @@ one of the built-in generators:
       (let [nvars (count vars)]
         (future
          (binding [gen/*seed* seed]
-           (doseq [v vars]
+           (doseq [^clojure.lang.Var v vars]
              (let [specs (var-specs v)]
                (report (merge {:spec (spec-name v) :seed seed}
                               (run-test (symbol (str (.getName (.ns v)) "/" (.sym v)))

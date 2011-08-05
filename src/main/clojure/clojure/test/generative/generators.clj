@@ -83,16 +83,17 @@ instance you can get a repeatable basis for tests."
 (defn weighted
   "Given a map of generators and weights, return a value from one of
    the generators, selecting generator based on weights."
-  ([m]
-     (let [weights   (reductions + (vals m))
-           total   (last weights)
-           choices (map vector (keys m) weights)]
-       (let [choice (uniform 0 total)]
-         (loop [[[c w] & more] choices]
-           (when w
-             (if (< choice w)
-               (call-through c)
-               (recur more))))))))
+  [m]
+  (let [weights   (reductions + (vals m))
+        total   (last weights)
+        choices (map vector (keys m) weights)]
+    (let [choice (uniform 0 total)]
+      (loop [[[c w] & more] choices]
+        (when w
+          (if (< choice w)
+            (call-through c)
+            (recur more)))))))
+
 (defn one-of
   "Generates one of the specs passed in, with equal probability."
   ([& specs]
