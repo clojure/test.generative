@@ -62,31 +62,4 @@
            (catch ArithmeticException e# :ArithmeticException)))
        forms)))
 
-(defn longable?
-  [n]
-  (try
-   (long n)
-   true
-   (catch Exception _)))
 
-(defspec integer-commutative-laws
-  (partial map identity)
-  [^long a ^long b]
-  (if (longable? (+' a b))
-    (assert (= (+ a b) (+ b a) (+' a b) (+' b a)))
-    (assert (= (+' a b) (+' b a))))
-  (if (longable? (*' a b))
-    (assert (= (* a b) (* b a) (*' a b) (*' b a)))
-    (assert (= (*' a b) (*' b a)))))
-
-(defspec integer-associative-laws
-  (partial map identity)
-  [^long a ^long b ^long c]
-  (if (every? longable? [(+' a b) (+' b c) (+' a b c)])
-    (assert (= (+ (+ a b) c) (+ a (+ b c))
-               (+' (+' a b) c) (+' a (+' b c))))
-    (assert (= (+' (+' a b) c) (+' a (+' b c)))))
-  (if (every? longable? [(*' a b) (*' b c) (*' a b c)])
-    (assert (= (* (* a b) c) (* a (* b c))
-               (*' (*' a b) c) (*' a (*' b c))))
-    (assert (= (*' (*' a b) c) (*' a (*' b c))))))
