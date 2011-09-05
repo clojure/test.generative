@@ -25,11 +25,11 @@ Given a var, namespace, or directory, you can run the tests for it:
   (test-namespaces 'clojure.test.generative-test)
   (test-dirs \"src/test/clojure\")
 
-Succesful test output includes :iterations, :msec, and the :spec
-(var name) for each test run:
+Succesful test output includes :iterations, :msec, and the :var for
+each test run:
 
   {:iterations 44645, :msec 1429,
-   :spec #'clojure.test.generative-test/numbers-closed-over-addition}
+   :var #'clojure.test.generative-test/numbers-closed-over-addition}
 
 By default, an entire test run lasts for 10 seconds, but you can change
 the test run duration by binding *msec*:
@@ -111,7 +111,7 @@ the error message, and the random seed.
 
 At this point, if you are in a REPL, you can rerun the failing test:
 
-  (eval (first (failed-forms)))
+  (eval (-> (failed-forms) first :form))
 
 Note the :seed value in the error output above. The *rnd* and *seed*
 values live in the clojure.test.generative.generators namespace, and
@@ -152,7 +152,10 @@ one of the built-in generators:
 (defn- report
   "Report a result. Thread-safe, unlike prn."
   [result]
-  (send-off last-report (fn [_] (prn result) result)))
+  (send-off last-report
+            (fn [_]
+              (prn result)
+              result)))
 
 (defn- deep-take
   "Recursively convert any collections in form to (take n)
@@ -190,33 +193,21 @@ one of the built-in generators:
          (map first))))
 
 (defn- fully-qualified
-  "Qualify a name used in :spec metadata. Unqualified names are
+  "Qualify a name used in :tag metadata. Unqualified names are
    interpreted in the 'clojure.test.generative.generators, except
    for the fn-building symbols fn and fn*."
-  [spec]
+  [n]
   (let [ns (cond
-            (#{'fn*} spec) nil
-            (#{'fn} spec) 'clojure.core
-            (namespace spec) (namespace spec)
+            (#{'fn*} n) nil
+            (#{'fn} n) 'clojure.core
+            (namespace n) (namespace n)
             :else 'clojure.test.generative.generators)]
     (if ns
-      (symbol (str ns) (name spec))
-      spec)))
-
-(defn- spec-compile
-  "Compile spec into a function."
-  [spec]
-  (if
-   (seq? spec) (eval `(fn [] ~spec))
-   (let [resolved @(try (resolve spec)
-                        (catch Exception _ (throw (IllegalArgumentException. (str "Unable to resolve " spec)))))]
-     (if (coll? resolved)
-       (fn [] (rand-nth resolved))
-       resolved))))
+      (symbol (str ns) (name n))
+      n)))
 
 (defn- dequote
-  "Used by defspec to remove the backquotes used to call out
-   user-namespaced forms."
+  "Remove the backquotes used to call out user-namespaced forms."
   [form]
   (prewalk
    #(if (and (sequential? %)
@@ -226,39 +217,62 @@ one of the built-in generators:
       %)
    form))
 
-(defn- tag->spec
+(defn- infinite
+  "Make a data generator infinite, by cycling collections and by
+   calling fns repeatedly."
+  [f]
+  (if (coll? f)
+    (cycle f)
+    (repeatedly f)))
+
+(defn- tag->gen
+  "Convert tag to source code form for a test data generator."
   [arg]
-  (let [m (meta arg)
-        spec (dequote (if (:spec m) (:spec m) (:tag m)))]
-    (with-meta arg (-> (assoc m :spec spec)
-                       (dissoc :tag)))))
+  (let [form (prewalk (fn [s] (if (symbol? s) (fully-qualified s) s)) (dequote arg))]
+    (if (seq? form)
+      (list 'fn '[] form) 
+      form)))
 
 (defn generate-test-data
-  "Generate a lazy, infinite sequence of inputs conforming to specs."
-  [specs]
-  (let [resolved (prewalk (fn [s] (if (symbol? s) (fully-qualified s) s)) (map tag->spec specs))
-        compiled (into [] (map spec-compile resolved))]
-    (repeatedly #(map (fn [f] (f)) compiled))))
+  "Generate infinite sequece of test data based on tags."
+  [tags]
+  (let [gens (map #(eval (tag->gen %)) tags)]
+    (apply map vector
+           (map
+            infinite 
+            gens))))
 
-(def ^:private failed-forms-ref
+(defn test-data-generator
+  "Create a test data generator based on tags."
+  [tags]
+  (let [gens (seq (map #(eval (tag->gen %)) tags))]
+    (if (seq gens)
+      (fn []
+        (apply map vector
+               (map
+                infinite 
+                gens)))
+      (constantly nil))))
+
+(def ^:private failures-ref
   (atom nil))
 
-(defn failed-forms
+(defn failures
   []
-  @failed-forms-ref)
+  @failures-ref)
 
 (defn run-test
-  "Tests function f with argument specs specs for up to msec
+  "Tests function f with generator gen for up to msec
    milliseconds. Returns a map of :msec and :iterations completed"
-  [fname f {:keys [specs msec verbose]}]
+  [& {:keys [fname f gen-inputs msec verbose]}]
   (binding [gen/*rnd* (java.util.Random. gen/*seed*)]
     (let [start (System/currentTimeMillis)
           times-up? (if msec
                       (fn [] (> (System/currentTimeMillis) (+ msec start)))
                       (constantly true))]
       (loop [count 0
-             [args & more] (mostly-unique (generate-test-data specs) (partial deep-take 8) 100)]
-        (if (or (nil? args) (times-up?))
+             [args & more] (mostly-unique (gen-inputs) (partial deep-take 8) 100)]
+        (if (or (and (nil? args) (< 0 count)) (times-up?))
           (merge {:msec (- (System/currentTimeMillis) start)
                   :iterations count}
                  (if (nil? args) {:exhausted true} {}))
@@ -271,20 +285,22 @@ one of the built-in generators:
                  (report {:form failed-form
                           :iteration count
                           :seed gen/*seed*
-                          :error (.getMessage t)})
-                 (swap! failed-forms-ref conj failed-form))
+                          :error (.getMessage t)
+                          :exception t})
+                 (swap! failures-ref conj {:form failed-form}))
                (throw t)))
             (recur (inc count) more)))))))
 
 (defn spec?
   "Is var a spec"
   [v]
-  (boolean (:spec (meta v))))
+  (boolean (::gen-inputs (meta v))))
 
 (defn- find-vars-in-namespaces
   [& nses]
-  (apply require nses)
-  (reduce (fn [v ns] (into v (vals (ns-interns ns)))) [] nses))
+  (when nses
+    (apply require nses)
+    (reduce (fn [v ns] (into v (vals (ns-interns ns)))) [] nses)))
 
 (defn- find-vars-in-dirs
   [& dirs]
@@ -317,30 +333,34 @@ one of the built-in generators:
    than *cores*, you will get less utilization and less testing!)"
   (into [] (range 42 (+ 1024 42))))
 
-(defn- spec-name
+(defn- var-name
   [^clojure.lang.Var s]
   (resolve (symbol (str (.getName (.ns s)) "/" (.sym s)))))
 
-(defn- var-specs
-  [v]
-  (into [] (->> (meta v) :arglists first (map (comp :spec meta)))))
+(def ^:private var-gen
+  (comp ::gen-inputs meta))
 
 (defn- run-test-vars
   [vars]
-  (into
-   []
-   (map
-    (fn [seed]
-      (let [nvars (count vars)]
-        (future
-         (binding [gen/*seed* seed]
-           (doseq [^clojure.lang.Var v vars]
-             (let [specs (var-specs v)]
-               (report (merge {:spec (spec-name v) :seed seed}
-                              (run-test (symbol (str (.getName (.ns v)) "/" (.sym v)))
-                                        @v
-                                        (merge {:msec (/ *msec* nvars) :verbose *verbose* :specs specs}))))))))))
-    (take *cores* *seeds*))))
+  (let [futures
+        (into
+         []
+         (map
+          (fn [seed]
+            (let [nvars (count vars)]
+              (future
+               (binding [gen/*seed* seed]
+                 (doseq [^clojure.lang.Var v vars]
+                   (report (merge {:var (var-name v) :seed seed}
+                                  (run-test :fname (var-name v)
+                                            :f @v
+                                            :msec (/ *msec* nvars)
+                                            :verbose *verbose*
+                                            :gen-inputs (var-gen v))))
+                   :done)))))
+          (take *cores* *seeds*)))]
+    (future (doseq [f futures] @f) (report :run-complete))
+    futures))
 
 (defn test-vars
   "Run tests for all vars. Returns vector of *cores* futures."
@@ -374,13 +394,17 @@ one of the built-in generators:
    result of calling fn-to-test.
 
    Multiple arities in argspecs are not supported."
-  [name fn-to-test tagged-args & validator-body]
-  (let [args (into [] (map #(with-meta % nil) tagged-args))
-        spec-args (into [] (map tag->spec tagged-args))]
-    `(defn ~(with-meta name (assoc (meta name) :spec true))
-       ~spec-args
-       (let [~'% (apply ~fn-to-test ~args)]
-         ~@validator-body))))
+  [name fn-to-test args & validator-body]
+  (when-let [missing-tags (->> (map #(list % (-> % meta :tag)) args)
+                               (filter (fn [[_ tag]] (nil? tag)))
+                               seq)]
+    (throw (IllegalArgumentException. (str "Missing tags for " (seq (map first missing-tags)) " in " name))))
+  `(defn ~(with-meta name (assoc (meta name)
+                            ::gen-inputs (test-data-generator (map #(-> % meta :tag) args))))
+     ~(into [] (map (fn [a#] (with-meta a# (dissoc (meta a#) :tag))) args))
+     (let [~'% (apply ~fn-to-test ~args)]
+       ~@validator-body)))
+
 
 
 

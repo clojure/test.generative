@@ -21,24 +21,24 @@
 
 (defspec test-exhausted-generation-2
   (constantly nil)
-  [^{:spec `little-number} arg1
-   ^{:spec `little-number} arg2])
+  [^{:tag `little-number} arg1
+   ^{:tag `little-number} arg2])
 
 (def digits [0 1 2 3 4 5 6 7 8 9])
 
 (defspec test-collection-based-generator
   identity
-  [^{:spec `digits} d]
+  [^{:tag `digits} d]
   (assert (<= 0 d 9)))
 
 (defspec test-vec
   identity
-  [^{:spec (vec long)} _]
+  [^{:tag (vec long)} _]
   (assert (vector? %)))
 
 (defspec test-weighted-generation
   identity
-  [^{:spec (vec #(weighted {bool 8 long 1}))} _]
+  [^{:tag (vec #(weighted {bool 8 long 1}))} _]
   (let [[longs bools] (split-with number? %)]
     (when (< 10 (count %))
       (assert (< (count longs) (count bools))))

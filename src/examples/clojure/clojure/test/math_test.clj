@@ -48,6 +48,13 @@
                (*' a (+' b c)) (+' (*' a b) (*' a c))))
     (assert (= (*' a (+' b c)) (+' (*' a b) (*' a c))))))
 
+(defspec addition-undoes-subtraction
+  (partial map identity)
+  [^long a ^long b]
+  (if (longable? (-' a b))
+    (assert (= a (-> a (- b) (+ b)))))
+  (assert (= a (-> a (-' b) (+' b)))))
+
 (defspec quotient-and-remainder
   (fn [a b] (sort [a b]))
   [^long a ^long b]
