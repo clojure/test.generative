@@ -38,7 +38,7 @@
 
 (defspec test-weighted-generation
   identity
-  [^{:tag (vec #(weighted {bool 8 long 1}))} _]
+  [^{:tag (vec #(weighted {boolean 8 long 1}))} _]
   (let [[longs bools] (split-with number? %)]
     (when (< 10 (count %))
       (assert (< (count longs) (count bools))))
