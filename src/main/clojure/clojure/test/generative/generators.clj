@@ -17,7 +17,7 @@ cases, because
 1. Spec compilation uses these fns for you automatically.
 2. There are lot of collisions with clojure.core!"}
   clojure.test.generative.generators
-  (:refer-clojure :exclude [byte char long float double bool string symbol keyword list vec set hash-map name rand-nth byte-array boolean-array short-array char-array int-array long-array float-array double-array])
+  (:refer-clojure :exclude [byte char long int short float double boolean string symbol keyword list vec set hash-map name rand-nth byte-array boolean-array short-array char-array int-array long-array float-array double-array])
   (:require [clojure.core :as core]))
 
 (def ^:dynamic ^java.util.Random
@@ -103,12 +103,23 @@ instance you can get a repeatable basis for tests."
   "Returns a random long. Same as uniform."
   uniform)
 
+(defn int
+  []
+  "Returns a random long in the int range."
+  (uniform Integer/MIN_VALUE (inc Integer/MAX_VALUE)))
+
+(defn short
+  []
+  "Returns a random long in the short range."
+  (uniform Short/MIN_VALUE (inc Short/MAX_VALUE)))
+
 (defn byte
   "Returns a random long in the byte range."
   ^long []
   (uniform Byte/MIN_VALUE (inc (core/int Byte/MAX_VALUE))))
 
-(defn bool
+(defn boolean
+  
   "Returns a random bool."
   []
   (< (.nextDouble *rnd*) 0.5))
@@ -236,7 +247,7 @@ instance you can get a repeatable basis for tests."
   [(constantly nil)
    byte
    long
-   bool
+   boolean
    printable-ascii-char
    string
    symbol

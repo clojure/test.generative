@@ -22,10 +22,14 @@
   (partial map identity)
   [^long a ^long b]
   (if (longable? (+' a b))
-    (assert (= (+ a b) (+ b a) (+' a b) (+' b a)))
+    (assert (= (+ a b) (+ b a)
+               (+' a b) (+' b a)
+               (unchecked-add a b) (unchecked-add b a)))
     (assert (= (+' a b) (+' b a))))
   (if (longable? (*' a b))
-    (assert (= (* a b) (* b a) (*' a b) (*' b a)))
+    (assert (= (* a b) (* b a)
+               (*' a b) (*' b a)
+               (unchecked-multiply a b) (unchecked-multiply b a)))
     (assert (= (*' a b) (*' b a)))))
 
 (defspec integer-associative-laws
@@ -33,11 +37,13 @@
   [^long a ^long b ^long c]
   (if (every? longable? [(+' a b) (+' b c) (+' a b c)])
     (assert (= (+ (+ a b) c) (+ a (+ b c))
-               (+' (+' a b) c) (+' a (+' b c))))
+               (+' (+' a b) c) (+' a (+' b c))
+               (unchecked-add (unchecked-add a b) c) (unchecked-add a (unchecked-add b c))))
     (assert (= (+' (+' a b) c) (+' a (+' b c)))))
   (if (every? longable? [(*' a b) (*' b c) (*' a b c)])
     (assert (= (* (* a b) c) (* a (* b c))
-               (*' (*' a b) c) (*' a (*' b c))))
+               (*' (*' a b) c) (*' a (*' b c))
+               (unchecked-multiply (unchecked-multiply a b) c) (unchecked-multiply a (unchecked-multiply b c))))
     (assert (= (*' (*' a b) c) (*' a (*' b c))))))
 
 (defspec integer-distributive-laws
@@ -45,14 +51,17 @@
   [^long a ^long b ^long c]
   (if (every? longable? [(*' a (+' b c)) (+' (*' a b) (*' a c))])
     (assert (= (* a (+ b c)) (+ (* a b) (* a c))
-               (*' a (+' b c)) (+' (*' a b) (*' a c))))
+               (*' a (+' b c)) (+' (*' a b) (*' a c))
+               (unchecked-multiply a (+' b c)) (+' (unchecked-multiply a b) (unchecked-multiply a c))))
     (assert (= (*' a (+' b c)) (+' (*' a b) (*' a c))))))
 
 (defspec addition-undoes-subtraction
   (partial map identity)
   [^long a ^long b]
   (if (longable? (-' a b))
-    (assert (= a (-> a (- b) (+ b)))))
+    (assert (= a
+               (-> a (- b) (+ b))
+               (-> a (unchecked-subtract b) (unchecked-add b)))))
   (assert (= a (-> a (-' b) (+' b)))))
 
 (defspec quotient-and-remainder
@@ -61,4 +70,6 @@
   (let [[a d] %
         q (quot a d)
         r (rem a d)]
-    (assert (= a (+ (* q d) r)))))
+    (assert (= a
+               (+ (* q d) r)
+               (unchecked-add (unchecked-multiply q d) r)))))

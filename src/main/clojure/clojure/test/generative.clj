@@ -149,7 +149,7 @@ one of the built-in generators:
 
 (def last-report (agent nil))
 
-(defn- report
+(defn report
   "Report a result. Thread-safe, unlike prn."
   [result]
   (send-off last-report
