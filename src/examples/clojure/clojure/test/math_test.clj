@@ -39,12 +39,14 @@
     (assert (= (+ (+ a b) c) (+ a (+ b c))
                (+' (+' a b) c) (+' a (+' b c))
                (unchecked-add (unchecked-add a b) c) (unchecked-add a (unchecked-add b c))))
-    (assert (= (+' (+' a b) c) (+' a (+' b c)))))
+    (assert (= (+' (+' a b) c) (+' a (+' b c))
+               (+ (+ (bigint a) b) c) (+ a (+ (bigint b) c)))))
   (if (every? longable? [(*' a b) (*' b c) (*' a b c)])
     (assert (= (* (* a b) c) (* a (* b c))
                (*' (*' a b) c) (*' a (*' b c))
                (unchecked-multiply (unchecked-multiply a b) c) (unchecked-multiply a (unchecked-multiply b c))))
-    (assert (= (*' (*' a b) c) (*' a (*' b c))))))
+    (assert (= (*' (*' a b) c) (*' a (*' b c))
+               (* (* (bigint a) b) c) (* a (* (bigint b) c))))))
 
 (defspec integer-distributive-laws
   (partial map identity)
@@ -53,7 +55,8 @@
     (assert (= (* a (+ b c)) (+ (* a b) (* a c))
                (*' a (+' b c)) (+' (*' a b) (*' a c))
                (unchecked-multiply a (+' b c)) (+' (unchecked-multiply a b) (unchecked-multiply a c))))
-    (assert (= (*' a (+' b c)) (+' (*' a b) (*' a c))))))
+    (assert (= (*' a (+' b c)) (+' (*' a b) (*' a c))
+               (* a (+ (bigint b) c)) (+ (* (bigint a) b) (* (bigint a) c))))))
 
 (defspec addition-undoes-subtraction
   (partial map identity)
@@ -62,7 +65,8 @@
     (assert (= a
                (-> a (- b) (+ b))
                (-> a (unchecked-subtract b) (unchecked-add b)))))
-  (assert (= a (-> a (-' b) (+' b)))))
+  (assert (= a
+             (-> a (-' b) (+' b)))))
 
 (defspec quotient-and-remainder
   (fn [a b] (sort [a b]))
