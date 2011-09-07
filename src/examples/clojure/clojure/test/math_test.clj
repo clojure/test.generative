@@ -11,6 +11,12 @@
   (:use clojure.test.generative)
   (:require [clojure.test.generative.generators :as gen]))
 
+(defn integer
+  "Distribution of integers biased towards the small, but
+   including all longs."
+  []
+  (gen/one-of #(gen/uniform -1 32) gen/byte gen/short gen/int gen/long))
+
 (defn longable?
   [n]
   (try
@@ -20,7 +26,7 @@
 
 (defspec integer-commutative-laws
   (partial map identity)
-  [^long a ^long b]
+  [^{:tag `integer} a ^{:tag `integer} b]
   (if (longable? (+' a b))
     (assert (= (+ a b) (+ b a)
                (+' a b) (+' b a)
@@ -34,7 +40,7 @@
 
 (defspec integer-associative-laws
   (partial map identity)
-  [^long a ^long b ^long c]
+  [^{:tag `integer} a ^{:tag `integer} b ^{:tag `integer} c]
   (if (every? longable? [(+' a b) (+' b c) (+' a b c)])
     (assert (= (+ (+ a b) c) (+ a (+ b c))
                (+' (+' a b) c) (+' a (+' b c))
@@ -50,8 +56,9 @@
 
 (defspec integer-distributive-laws
   (partial map identity)
-  [^long a ^long b ^long c]
-  (if (every? longable? [(*' a (+' b c)) (+' (*' a b) (*' a c))])
+  [^{:tag `integer} a ^{:tag `integer} b ^{:tag `integer} c]
+  (if (every? longable? [(*' a (+' b c)) (+' (*' a b) (*' a c))
+                         (*' a b) (*' a c) (+' b c)])
     (assert (= (* a (+ b c)) (+ (* a b) (* a c))
                (*' a (+' b c)) (+' (*' a b) (*' a c))
                (unchecked-multiply a (+' b c)) (+' (unchecked-multiply a b) (unchecked-multiply a c))))
@@ -60,7 +67,7 @@
 
 (defspec addition-undoes-subtraction
   (partial map identity)
-  [^long a ^long b]
+  [^{:tag `integer} a ^{:tag `integer} b]
   (if (longable? (-' a b))
     (assert (= a
                (-> a (- b) (+ b))
@@ -70,7 +77,7 @@
 
 (defspec quotient-and-remainder
   (fn [a b] (sort [a b]))
-  [^long a ^long b]
+  [^{:tag `integer} a ^{:tag `integer} b]
   (let [[a d] %
         q (quot a d)
         r (rem a d)]

@@ -111,7 +111,7 @@ instance you can get a repeatable basis for tests."
 (defn short
   []
   "Returns a random long in the short range."
-  (uniform Short/MIN_VALUE (inc (long Short/MAX_VALUE))))
+  (uniform Short/MIN_VALUE (inc (core/long Short/MAX_VALUE))))
 
 (defn byte
   "Returns a random long in the byte range."
