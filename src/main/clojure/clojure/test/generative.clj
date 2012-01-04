@@ -109,16 +109,12 @@ the error message, and the random seed.
    :seed 42,
    :error \"Assert failed: (pos? l)\"}
 
-At this point, if you are in a REPL, you can rerun the failing test:
-
-  (eval (-> (failed-forms) first :form))
-
 Note the :seed value in the error output above. The *rnd* and *seed*
 values live in the clojure.test.generative.generators namespace, and
 can be used to conrol the randomization used to generate test data.
 This can be useful in generating reproducible inputs.
 
-The test runner tracks old inputs, and will not submit the same
+The test runner tracks old inputs, and tries not to submit the same
 input to the same fn twice in a single test run. If the test data
 generator cannot generate enough unique values to drive the test for
 the expected msec duration, it will stop when it runs out of values,
@@ -149,12 +145,19 @@ one of the built-in generators:
 
 (def last-report (agent nil))
 
+(def report-fn
+  "Reporting function, defaults to prn.
+   reset! val to customize reporting."
+  (atom prn))
+
 (defn report
   "Report a result. Thread-safe, unlike prn."
   [result]
   (send-off last-report
             (fn [_]
-              (prn result)
+              (try
+               (@report-fn result)
+               (catch Exception e (.printStackTrace e)))
               result)))
 
 (defn- deep-take
@@ -254,13 +257,6 @@ one of the built-in generators:
                 gens)))
       (constantly nil))))
 
-(def ^:private failures-ref
-  (atom nil))
-
-(defn failures
-  []
-  @failures-ref)
-
 (defn run-test
   "Tests function f with generator gen for up to msec
    milliseconds. Returns a map of :msec and :iterations completed"
@@ -281,13 +277,13 @@ one of the built-in generators:
              (when verbose (report {:inputs args}))
              (apply f args)
              (catch Throwable t
-               (let [failed-form `(~fname ~@args)]
-                 (report {:form failed-form
-                          :iteration count
-                          :seed gen/*seed*
-                          :error (.getMessage t)
-                          :exception t})
-                 (swap! failures-ref conj {:form failed-form}))
+               (let [failed-form `(~fname ~@args)
+                     failure {:form failed-form
+                              :iteration count
+                              :seed gen/*seed*
+                              :error (.getMessage t)
+                              :exception t}]
+                 (report failure))
                (throw t)))
             (recur (inc count) more)))))))
 
