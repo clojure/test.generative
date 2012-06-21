@@ -389,7 +389,16 @@ one of the built-in generators:
    bindings to the vars in argspecs, plus a binding of '%' to the
    result of calling fn-to-test.
 
-   Multiple arities in argspecs are not supported."
+   Multiple arities in argspecs are not supported.
+
+   If contracts are provided (from core.contracts), they will be
+   applied to fn-to-test before the execution of the test.
+
+   (defspec score-invariants
+     score
+     [^{:tag `random-secret} secret
+      ^{:tag `random-secret} guess]
+     score-contract)"
   [name fn-to-test args & validator-body]
   (when-let [missing-tags (->> (map #(list % (-> % meta :tag)) args)
                                (filter (fn [[_ tag]] (nil? tag)))
