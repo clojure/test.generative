@@ -78,9 +78,10 @@
 (defspec quotient-and-remainder
   (fn [a b] (sort [a b]))
   [^{:tag `integer} a ^{:tag `integer} b]
-  (let [[a d] %
-        q (quot a d)
-        r (rem a d)]
-    (assert (= a
-               (+ (* q d) r)
-               (unchecked-add (unchecked-multiply q d) r)))))
+  (when-not (zero? (second %))
+    (let [[a d] %
+          q (quot a d)
+          r (rem a d)]
+      (assert (= a
+                 (+ (* q d) r)
+                 (unchecked-add (unchecked-multiply q d) r))))))

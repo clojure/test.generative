@@ -8,58 +8,31 @@
 ;   You must not remove this notice, or any other, from this software.
 
 (ns clojure.test.generative-test
-  (:use clojure.test.generative)
-  (:require [clojure.test.generative.generators :as gen]))
+  (:use clojure.test.generative
+        [clojure.test :exclude [is]])
+  (:require [clojure.test.generative.generators :as gen]
+            [clojure.test.generative.event :as event]
+            [clojure.test.generative.clojure-test :as clojure-test]))
+
+(clojure-test/run-generative-tests)
 
 (defspec test-anything-goes
   identity
   [^anything s])
 
-(defn little-number
-  []
-  (gen/uniform 0 3))
-
-(defspec test-exhausted-generation-2
-  (constantly nil)
-  [^{:tag `little-number} arg1
-   ^{:tag `little-number} arg2])
-
-(def digits [0 1 2 3 4 5 6 7 8 9])
-
-(defspec test-collection-based-generator
-  identity
-  [^{:tag `digits} d]
-  (assert (<= 0 d 9)))
-
-(defspec test-vec
-  identity
-  [^{:tag (vec long)} _]
-  (assert (vector? %)))
-
 (defspec test-weighted-generation
   identity
   [^{:tag (vec #(weighted {boolean 8 long 1}))} _]
   (let [[longs bools] (split-with number? %)]
-    (when (< 10 (count %))
-      (assert (< (count longs) (count bools))))
-    (assert (= (+ (count longs) (count bools))
+    (is (= (+ (count longs) (count bools))
                (count %)))))
 
 (defspec integers-closed-over-addition
   (fn [a b] (+' a b))
   [^long a ^long b]
-  (integer? %))
+  (is (integer? %)))
 
-(defmacro long=
-  "Returns true if all forms are equal, or if all forms
-   throw an ArithmeticException"
-  [& forms]
-  `(=
-    ~@(map
-       (fn [form]
-         `(try
-           ~form
-           (catch ArithmeticException e# :ArithmeticException)))
-       forms)))
+
+
 
 

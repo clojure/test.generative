@@ -5,7 +5,6 @@ Test data generation and execution harness. Very early days.
 This API will change. You have been warned.
 
 
-
 Releases and Dependency Information
 ========================================
 
@@ -28,7 +27,6 @@ Latest stable release: 0.1.4
     </dependency>
 
 
-
 Example Usages
 ========================================
 
@@ -40,18 +38,13 @@ and a validator:
       [^long a ^long b]                     ;; input spec
       (assert (integer? %)))                ;; 0 or more validator forms
 
-Given a var, namespace, or directory, you can run the tests for it:
+To generate test data, see the fns in the generators namespace.
 
-    (test-vars #'integers-closed-over-addition)
-    (test-namespaces 'clojure.test.generative-test)
-    (test-dirs \"src/test/clojure\")
+To integrate with clojure.test:
 
-Succesful test output includes :iterations, :msec, and the :var for
-each test run:
-
-    {:iterations 44645, :msec 1429,
-     :var #'clojure.test.generative-test/numbers-closed-over-addition}
-
+    ;; somewhere in your test suite
+    (:require '[clojure.test.generative.clojure-test :as clojure-test])
+    (clojure-test/run-generative-tests)
 
 Developer Information
 ========================================
@@ -69,6 +62,13 @@ Developer Information
 Change Log
 ====================
 
+* Release 0.1.5 (in development)
+  * Can now run tests under clojure.test
+  * Tests produce data events that can be consumed by arbitrary reporting tools
+  * Example reporting integration with logback. 
+  * Added `is` macro with more detailed reporting than `clojure.test/is`
+  * Removed collection based input generators. Input generators must be fns.
+  * Removed duplicate input check. Tests can be called multiple times with same input. 
 * Release 0.1.4 on 2012.01.03
   * Initial version
 
