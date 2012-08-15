@@ -17,7 +17,7 @@ cases, because
 1. Spec compilation uses these fns for you automatically.
 2. There are lot of collisions with clojure.core!"}
   clojure.test.generative.generators
-  (:refer-clojure :exclude [byte char long int short float double boolean string symbol keyword list vec set hash-map name rand-nth byte-array boolean-array short-array char-array int-array long-array float-array double-array])
+  (:refer-clojure :exclude [byte char long int short float double boolean string symbol keyword list vec set hash-map name rand-nth byte-array boolean-array short-array char-array int-array long-array float-array double-array shuffle])
   (:require [clojure.core :as core]))
 
 (def ^:dynamic ^java.util.Random
@@ -273,6 +273,12 @@ instance you can get a repeatable basis for tests."
   "Returns a random scalar or collection."
   []
   (one-of scalar collection))
+
+(defn shuffle
+  "Shuffle coll"
+  [coll]
+  (sort-by double coll))
+
 
 
 

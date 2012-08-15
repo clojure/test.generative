@@ -63,7 +63,8 @@
               (map
                #(future
                  (try
-                  (binding [gen/*seed* (java.util.Random. (+ % 42))
+                  (binding [gen/*seed* (+ % 42)
+                            gen/*rnd* (java.util.Random. gen/*seed*)
                             *failed* (promise)]
                     (loop [iter 0]
                       (let [result (run-iter test)

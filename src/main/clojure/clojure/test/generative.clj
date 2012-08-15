@@ -47,10 +47,12 @@
 
 (defmacro fail
   [& args]
-  (with-meta `(event/report-context :type ::fail
-                                    :level :warn
-                                    ~@args)
-    (meta &form)))
+  `(do
+     (runner/failed!)
+     ~(with-meta `(event/report-context :type ::fail
+                                        :level :warn
+                                        ~@args)
+        (meta &form))))
 
 (defmacro is
   ([v] (with-meta `(is ~v nil) (meta &form)))
