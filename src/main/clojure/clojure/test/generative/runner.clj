@@ -12,7 +12,10 @@
    [clojure.tools.namespace :as ns]
    [clojure.test.generative.config :as config]
    [clojure.test.generative.event :as event]
-   [clojure.test.generative.generators :as gen]))
+   [clojure.test.generative.generators :as gen]
+   [clojure.test.generative.io :as io]
+   [clojure.test.generative.clojure-test-adapter :as cta]
+   [clojure.test :as ctest]))
 
 (set! *warn-on-reflection* true)
 
@@ -45,14 +48,14 @@
   (let [name (test-name test)
         f (test-fn test)
         input (test-input test)]
-    (event/report :name name :args input :type :clojure.test.generative/iter :tags #{:begin})
+    (event/report :test/iter :name name :args input :tags #{:begin})
     (try
      (let [result (apply f input)]
        (when-not (realized? *failed*)
-         (event/report :name name :return result :type :clojure.test.generative/iter :tags #{:end})))
+         (event/report :test/iter :name name :return result :tags #{:end})))
      (catch Throwable t
        (deliver *failed* :error)
-       (event/report :name name :exception t :type :clojure.test.generative/error)))))
+       (event/report :error :name name :exception t)))))
 
 (defn run-for
   "Run f (presumably for side effects) repeatedly on n threads,
@@ -63,20 +66,27 @@
               (map
                #(future
                  (try
+                  (event/report :test/seed :test/seed (+ % 42))
                   (binding [gen/*seed* (+ % 42)
                             gen/*rnd* (java.util.Random. gen/*seed*)
                             *failed* (promise)]
+                    (event/report :test/test :tags #{:begin})
                     (loop [iter 0]
                       (let [result (run-iter test)
-                            now (System/currentTimeMillis)]
+                            now (System/currentTimeMillis)
+                            failed? (realized? *failed*)]
                         (if (and (< now (+ start msec))
-                                   (not (realized? *failed*)))
+                                   (not failed?))
                           (recur (inc iter))
-                          (event/report :msec (- now start)
+                          (event/report :test/test
+                                        :msec (- now start)
                                         :count iter
-                                        :type :clojure.test.generative/run-completed)))))
+                                        :tags #{:end}
+                                        :test/result (if failed? :test/fail :test/pass)
+                                        :level (if failed? :warn :info)
+                                        :name (test-name test))))))
                   (catch Throwable t
-                    (event/report :level :error :exception t :type :clojure.test.generative/run-error))))
+                    (event/report :error :level :error :exception t :name (test-name test)))))
                (range nthreads)))]
     (doseq [f futs] @f)))
 
@@ -95,21 +105,9 @@
   (when *failed*
     (deliver *failed* :failed)))
 
-(defn set-seed
+#_(defn set-seed
   [n]
-  (event/report :seed n)
   (set! gen/*rnd* (java.util.Random. n)))
-
-(defn run-suite
-  [fs nthreads msec]
-  (event/report :tags #{:begin} :type :clojure.test.generative/suite :nthreads nthreads :ntests (count fs))
-  (try
-   (run-batch
-    fs
-    nthreads
-    msec)
-   (finally
-    (event/report :tags #{:end} :type :clojure.test.generative/suite :nthreads nthreads :ntests (count fs)))))
 
 (defn gentest?
   [v]
@@ -130,12 +128,69 @@
   [& vars]
   (filter gentest? vars))
 
-(defn run-all
-  []
-  (let [conf (config/config)
-        tests (->> (apply find-vars-in-namespaces (all-ns))
-                   (filter gentest?))]
-    (run-suite tests (:threads conf) (:msec conf))))
+(defn run-generative-tests
+  "Run generative tests."
+  [nses nthreads msec]
+  (doseq [ns nses]
+    (when-let [fs (->> (find-vars-in-namespaces ns)
+                       (filter gentest?)
+                       seq)]
+      (event/report :test/group
+                    :name ns
+                    :tags #{:begin}
+                    :test/threads nthreads
+                    :test/count (count fs))
+      (try
+       (run-batch
+        fs
+        nthreads
+        (quot msec (count nses)))
+       (finally
+        (event/report :test/group :tags #{:end} :test/threads nthreads :test/count (count fs)))))))
+
+(defn run-all-tests
+  "Run generative tests and clojure.test tests"
+  [nses threads msec]
+  (let [event-counts (atom {})
+        event-counter #(when-not (contains? (:tags %) :begin)
+                         (when-let [type (:type %)]
+                           (swap! event-counts update-in [type] (fnil inc 0))))]
+    (event/with-handler event-counter
+      (event/report :test/library :name 'clojure.test)
+      (binding [ctest/report cta/report-adapter]
+        (apply ctest/run-tests nses))
+      (event/report :test/library :name 'clojure.test.generative)
+      (run-generative-tests nses threads msec)
+      (io/await)
+      @event-counts)))
+
+(defn failed?
+  [result]
+  (or (:assert/fail result)
+      (:test/fail result)
+      (:error result)))
+
+(defn -main
+  "Command line entry point, runs all tests in dirs using clojure.test and
+   test.generative. Calls System.exit!"
+  [& dirs]
+  (if (seq dirs)
+    (let [nses (mapcat #(ns/find-namespaces-in-dir (java.io.File. ^String %)) dirs)
+          conf (config/config)]
+      (doseq [ns nses] (require ns))
+      (event/install-default-handlers)
+      (try
+       (let [result (run-all-tests nses (:threads conf) (:msec conf))]
+         (println "\n" result)
+         (System/exit (if (failed? result) 1 0)))
+       (catch Throwable t
+         (.printStackTrace t)
+         (System/exit -1))
+       (finally
+        (shutdown-agents))))
+    (do
+      (println "Specify at least one directory with tests")
+      (System/exit -1))))
 
 
 

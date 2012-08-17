@@ -96,7 +96,10 @@
         <version>1.3.7</version>
         <configuration>
           <vmargs>-Dclojure.test.generative.runner=clojure.test</vmargs>
-          <!-- <testScript>bin/test_runner.clj</testScript> -->
+          <testScript>bin/test.clj</testScript>
+          <testSourceDirectories>
+            <testSourceDirectory>src/examples/clojure</testSourceDirectory>
+          </testSourceDirectories>
 	  <copiedNamespaces>
             <namespace>!.*</namespace>
 	  </copiedNamespaces>

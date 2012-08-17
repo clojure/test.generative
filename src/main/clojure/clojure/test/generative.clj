@@ -49,7 +49,7 @@
   [& args]
   `(do
      (runner/failed!)
-     ~(with-meta `(event/report-context :type ::fail
+     ~(with-meta `(event/report-context :assert/fail
                                         :level :warn
                                         ~@args)
         (meta &form))))
@@ -60,7 +60,7 @@
      `(let [~'actual ~v ~'expected '~v]
         (if ~'actual
           (do
-            (event/report :level :debug :type ::pass)
+            (event/report :assert/pass :level :debug)
             ~'actual)
           ~(with-meta
              `(fail ~@(when msg `[:message ~msg]))

@@ -8,66 +8,61 @@
 ;   You must not remove this notice, or any other, from this software.
 
 (ns clojure.test.generative.event
-  (:refer-clojure :exclude [pr-str])
-  (:require [clojure.pprint :as pprint]
-            [clojure.string :as str]))
+  (:require [clojure.test.generative.config :as config]))
 
 (set! *warn-on-reflection* true)
+
+(defprotocol FQName
+  (fqname [_]))
+
+(extend-protocol FQName
+  String
+  (fqname [s] s)
+
+  clojure.lang.Symbol
+  (fqname [s] (str s))
+
+  clojure.lang.Keyword
+  (fqname [k] (subs (str k) 1))
+
+  clojure.lang.Var
+  (fqname [v] (if-let [ns (.ns v)]
+                (symbol (str ns "/" (.sym v)))
+                (.sym v))))
 
 (def ^long pid
   "Process id"
   (read-string (.getName (java.lang.management.ManagementFactory/getRuntimeMXBean))))
 
+(defn assocnn
+  "Assoc but drop nils"
+  ([m k v] (if (nil? v) m (assoc m k v)))
+  ([m k v & kvs] (let [ret (assocnn m k v)]
+                   (if kvs
+                     (recur ret (first kvs) (second kvs) (nnext kvs))
+                     ret))))
+
 (defn create
   [& args]
-  (let [t (Thread/currentThread)]
-    (apply assoc
-           {:tstamp (System/currentTimeMillis)
-            :thread (.getId t)
-            :thread-name (.getName t)
-            :pid pid
-            :level :info}
-           args)))
+  (let [t (Thread/currentThread)
+        event (apply assocnn
+                     {:tstamp (System/currentTimeMillis)
+                      :thread (.getId t)
+                      :thread/name (.getName t)
+                      :pid pid
+                      :level :info}
+                     args)]
+    (assert (keyword? (:type event)) event)
+    event))
 
-(def ^:private serializer (agent nil))
-
-(defn serialized
-  "Returns a function that calls f for side effects, async,
-   serialized by an agent"
-  [f]
-  (fn [& args]
-    (send-off serializer
-              (fn [_]
-                (apply f args)
-                nil))))
-
-;; TODO set from Java property?
-(def ^:private event-print-length 100)
-(def ^:private event-print-level 10)
-
-(defn pr-str
-  "Print with event print settings"
-  [s]
-  (binding [*print-length* event-print-length
-            *print-level* event-print-level]
-    (clojure.core/pr-str s)))
-
-(defn pprint
-  "Print with event print settings"
-  [s]
-  (binding [*print-length* event-print-length
-            *print-level* event-print-level]
-    (pprint/pprint s)
-    (flush)))
-
-(def ^:private report-fns
+(def ^:private handlers
   (atom []))
 
 (defn add-handler
   "Add a handler. Idempotent"
   [f]
   (swap!
-   report-fns
+   handlers
    (fn [v f]
      (if (some #{f} v)
        v
@@ -78,10 +73,19 @@
   "Remove a handler. Idempotent"
   [f]
   (swap!
-   report-fns
+   handlers
    (fn [v f]
      (into (empty v) (remove #{f} v)))
    f))
+
+(defn load-var-val
+  "Load and return the value of a var"
+  [fqname]
+  (when-let [ns (namespace fqname)]
+    (require (symbol ns)))
+  (if-let [v (resolve fqname)]
+    @v
+    (throw (IllegalArgumentException. (str "No var named " fqname)))))
 
 (defmacro with-handler
   "Run with handler temporarily installed."
@@ -93,28 +97,25 @@
       (finally
        (remove-handler h#)))))
 
-(defn load-var-val
-  "Load and return the value of a var"
-  [fqname]
-  (when-let [ns (namespace fqname)]
-    (require (symbol ns)))
-  @(resolve fqname))
-
-(defn load-default-handlers
+(defn install-default-handlers
+  "Installs handler functions, a comma-delimited list of fn names, from
+   clojure.test.generative.event.handlers. If none are specified, install
+   c.t.g.io/console-reporter"
   []
-  (reset! report-fns [])
-  (doseq [handler (let [s (System/getProperty "clojure.test.generative.event.handlers")]
-              (when (seq s) (str/split s #",")))]
+  (reset! handlers [])
+  (doseq [handler (:handlers (config/config))]
     (add-handler (load-var-val (symbol handler)))))
 
 (defn report-fn
+  "Call the installed handles for an event"
   [event]
-  (doseq [f @report-fns]
+  (doseq [f @handlers]
     (f event)))
 
 (defmacro report
-  [& args]
-  `(report-fn (create ~@args)))
+  [type & args]
+  (assert (even? (count args)) args)
+  `(report-fn (create ~@args :type ~type)))
 
 (defn local-bindings
   "Produces a map of the names of local bindings to their values."
@@ -124,23 +125,14 @@
 
 (defmacro report-context
   "Report event with contextual ns, file, line, bindings."
-  [& args]
+  [type & args]
+  (assert (even? (count args)) args)
   `(report-fn
-    (create :bindings ~(local-bindings &env)
+    (create :locals ~(local-bindings &env)
             :file ~*file*
             :line ~(:line (meta &form))
-            ~@args)))
+            ~@args
+            :type ~type)))
 
-(def last-dot (atom 0))
 
-(defn dot-progress
-  "Prints a dot per event, throttled to ten dots/sec."
-  [{:keys [tstamp]}]
-  (when (< 100 (- tstamp @last-dot))
-    (reset! last-dot tstamp)
-    (send-off serializer
-              (fn [_] 
-                (print ".")
-                (flush)
-                nil))))
 

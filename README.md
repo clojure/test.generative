@@ -38,13 +38,40 @@ and a validator:
       [^long a ^long b]                     ;; input spec
       (assert (integer? %)))                ;; 0 or more validator forms
 
-To generate test data, see the fns in the generators namespace.
+To generate test data, see the fns in the generators namespace. Note
+that these functions shadow a bunch of clojure.core names.
 
-To integrate with clojure.test:
+You can run clojure.test and clojure.test.generative tests together
+from the c.t.g. runner:
 
-    ;; somewhere in your test suite
-    (:require '[clojure.test.generative.clojure-test :as clojure-test])
-    (clojure-test/run-generative-tests)
+    (require '[clojure.test.generative.runner :as runner])
+    (runner/-main "src/test/clojure" "src/examples/clojure")
+
+Assertion support is currently minimal. There is an `is` macro,
+similar to clojure.test's, that provides rudimentaty contextual
+reporting.  You can also use plain assertions, or clojure.test
+validation forms such as `is` and `are`, or any other forms that throw
+exception on failure. No contextual reporting for these yet.
+
+You can configure the runner with Java system properties:
+
+<table>
+  <tr>
+    <th>Java Property</th><th>Interpretation</th>
+  </tr>
+  <tr>
+    <td>clojure.test.generative.threads</td><td>Number of concurrent threads</td>
+  </tr>
+  <tr>
+    <td>clojure.test.generative.msec</td><td>Desired test run duration</td>
+  </tr>
+  <tr>
+    <td>clojure.test.generative.handlers</td><td>Comma-delimited list of handlers</td>
+  </tr>
+</table>
+
+The default handler prints test run to stdout, but others could
+e.g. put test events in a database.
 
 Developer Information
 ========================================
@@ -56,8 +83,6 @@ Developer Information
 * [Continuous Integration](http://build.clojure.org/job/test.generative/)
 
 * [Compatibility Test Matrix](http://build.clojure.org/job/test.generative-test-matrix/)
-
-
 
 Change Log
 ====================

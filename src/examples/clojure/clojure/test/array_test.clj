@@ -9,10 +9,7 @@
 
 (ns clojure.test.array-test
   (:use clojure.test.generative)
-  (:require [clojure.test.generative.generators :as gen]
-            [clojure.test.generative.clojure-test :as clojure-test]))
-
-(clojure-test/run-generative-tests)
+  (:require [clojure.test.generative.generators :as gen]))
 
 (defn nan-or-=
   [a b]

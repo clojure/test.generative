@@ -8,29 +8,16 @@
 ;   You must not remove this notice, or any other, from this software.
 
 (ns clojure.test.generative-test
-  (:use clojure.test.generative
-        [clojure.test :exclude [is]])
-  (:require [clojure.test.generative.generators :as gen]
-            [clojure.test.generative.event :as event]
-            [clojure.test.generative.clojure-test :as clojure-test]))
+  (:use [clojure.test.generative :as test]
+        [clojure.test :exclude [is]]))
 
-(clojure-test/run-generative-tests)
+(deftest test-fully-qualified
+  (is (= 'a/b (@#'test/fully-qualified 'a/b)))
+  (is (= 'clojure.test.generative.generators/long (@#'test/fully-qualified 'long))))
 
-(defspec test-anything-goes
-  identity
-  [^anything s])
 
-(defspec test-weighted-generation
-  identity
-  [^{:tag (vec #(weighted {boolean 8 long 1}))} _]
-  (let [[longs bools] (split-with number? %)]
-    (is (= (+ (count longs) (count bools))
-               (count %)))))
 
-(defspec integers-closed-over-addition
-  (fn [a b] (+' a b))
-  [^long a ^long b]
-  (is (integer? %)))
+
 
 
 

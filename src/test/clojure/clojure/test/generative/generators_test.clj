@@ -1,5 +1,6 @@
 (ns clojure.test.generative.generators-test
-  (:use clojure.test.generative)
+  (:use clojure.test.generative
+        [clojure.test :only (deftest)])
   (:require [clojure.test.generative.generators :as gen]))
 
 (defspec test-repeatable-generation
@@ -13,3 +14,11 @@
     (dotimes [iter iters]
       (is (= (nth gen-1 iter)
              (nth gen-2 iter))))))
+
+(defspec test-weighted-generation
+  identity
+  [^{:tag (vec #(weighted {boolean 8 long 1}))} _]
+  (let [[longs bools] (split-with number? %)]
+    (is (= (+ (count longs) (count bools))
+           (count %)))))
+

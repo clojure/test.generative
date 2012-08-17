@@ -7,12 +7,13 @@
 ;   the terms of this license.
 ;   You must not remove this notice, or any other, from this software.
 
-(ns clojure.test.generative.config)
+(ns clojure.test.generative.config
+  (:require [clojure.string :as str]))
 
 (def config-mapping
   [["clojure.test.generative.threads" [:threads] read-string (.availableProcessors (Runtime/getRuntime))]
    ["clojure.test.generative.msec" [:msec] read-string 10000]
-   ["clojure.test.generative.runner" [:runner] identity nil]])
+   ["clojure.test.generative.handlers" [:handlers] #(str/split % #",") ["clojure.test.generative.io/console-reporter"]]])
 
 (defn config
   []

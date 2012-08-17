@@ -1,0 +1,58 @@
+* Common Event Keys
+| name        | type               | notes                                  |
+|-------------+--------------------+----------------------------------------|
+| tstamp      | long               | msec since epoch                       |
+| thread      | long               | thread id                              |
+| pid         | long               | process id                             |
+| level       | keyword enum       | severiry level                         |
+| type        | namespaced keyword | drive extended interpretation          |
+| locals      | map                | local bindings                         |
+| file        | string             | file path                              |
+| ns          | symbol             | namespace                              |
+| line        | long               | line number                            |
+| bindings    | map                | dynamic bindings                       |
+| thread/name | string             | name of a thread                       |
+| msec        | long               | a duration                             |
+| nsec        | long               | a duration                             |
+| count       | long               | a count                                |
+| tag         | set of keyword     |                                        |
+| args        | list of any        | args to a fn                           |
+| return      | any                | return value of a fun                  |
+| exception   | exception          | an exception                           |
+| name        | symbol             | a name                                 |
+| description | string             | a non-name characterization of a thing |
+| uuid        | uuid               | a unique name                          |
+| message     | string             | a message                              |
+* Comment Event Types
+| type  | notes      |
+|-------+------------|
+| error | runtime error |
+* Test Event Keys
+| name          | type   | notes                |
+|---------------+--------+----------------------|
+| test/count    | long   | number of tests      |
+| test/threads  | long   | number of threads    |
+| test/seed     | long   | numeric seed         |
+| text/expected | any    |                      |
+| test/actual   | any    |                      |
+| test/library  | symbol | name of test library |
+* Test Events in c.t.g
+| name         | begin/end tags? | count | args | test/threads | msec | context | level |
+|--------------+-----------------+-------+------+--------------+------+---------+-------|
+| :test/group  | x               | x     |      |              |      |         | info  |
+| :test/iter   |                 |       | x    |              |      |         | info  |
+| :test/test   | x               | x     |      |              | x    |         | info  |
+| :test/seed   |                 |       |      |              |      |         | info  |
+| :test/fail   |                 |       |      |              |      | x       | warn  |
+| :test/pass   |                 |       |      |              |      |         | info  |
+| :assert/pass |                 |       |      |              |      |         | debug |
+| :assert/fail |                 |       |      |              |      |         | debug |
+* Test Events in c.t
+| name                | becomes                 | other keys                                       |
+|---------------------+-------------------------+--------------------------------------------------|
+| :pass               | :assert/pass            |                                                  |
+| :fail               | :assert/fail            | :expected, :actual, :message, *testing-contexts* |
+| :error              | :error                  | :expected, :actual, :message, *testing-contexts* |
+| :summary            | (ignore, do own calc)   |                                                  |
+| :begin/end-test-ns  | :test/group :begin/:end | :ns  -> name                                     |
+| :begin/end-test-var | :test/test :begin/:end  | :var -> name                                     |

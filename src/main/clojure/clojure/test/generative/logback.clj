@@ -16,40 +16,50 @@
 (set! *warn-on-reflection* true)
 
 (defn level->logback
-  [level]
+  ^Level [level]
   (case level
         :info Level/INFO
         :warn Level/WARN
         :error Level/ERROR
         :debug Level/DEBUG))           
 
+(defn logger-name
+  ^String [event]
+  (event/fqname (or (:ns event)
+                    (:type event)
+                    (:name event)
+                    "root")))
+
 (defn event->logback
-  [event ^ch.qos.logback.classic.Logger logger]
-  (let [msg (delay (binding [*print-length* 50]
+  "Returns map with keys :logger, :event, :fire"
+  [event]
+  (let [name (logger-name event)
+        logger ^ch.qos.logback.classic.Logger (LoggerFactory/getLogger name)
+        msg (delay (binding [*print-length* 50]
                      (pr-str (dissoc event :level :thread :tstamp :name))))
-        level (level->logback (:level event))]
-    (reify ILoggingEvent
-           (getThreadName [_] (str (:thread-name event)))
-           (getLevel [_] level)
-           (getMessage [_] @msg)
-           (getArgumentArray [_])
-           (getFormattedMessage [_] @msg)
-           (getLoggerName [_] (.getName logger))
-           (getLoggerContextVO [_] (.. logger getLoggerContext getLoggerContextRemoteView))
-           (getThrowableProxy [_])
-           (getCallerData [_])
-           (hasCallerData [_])
-           (getMarker [_])
-           (getMdc [_])
-           (getTimeStamp [_] (:tstamp event))
-           (prepareForDeferredProcessing [_]))))
+        level (level->logback (:level event))
+        logback-event (reify ILoggingEvent
+                             (getThreadName [_] (str (:thread/name event)))
+                             (getLevel [_] level)
+                             (getMessage [_] @msg)
+                             (getArgumentArray [_])
+                             (getFormattedMessage [_] @msg)
+                             (getLoggerName [_] (.getName logger))
+                             (getLoggerContextVO [_] (.. logger getLoggerContext getLoggerContextRemoteView))
+                             (getThrowableProxy [_])
+                             (getCallerData [_])
+                             (hasCallerData [_])
+                             (getMarker [_])
+                             (getMdc [_])
+                             (getTimeStamp [_] (:tstamp event))
+                             (prepareForDeferredProcessing [_]))]
+    {:logger logger
+     :event logback-event
+     :fire (fn [] (.callAppenders logger logback-event))}))
 
 (defn handler
   [event]
-  (let [name (str (:name event))
-        logger ^ch.qos.logback.classic.Logger (LoggerFactory/getLogger name)]
-    (.callAppenders logger (event->logback event logger))))
-
+  ((:fire (event->logback event))))
 
 (comment
   (require :reload '[clojure.test.generative.event :as event])
