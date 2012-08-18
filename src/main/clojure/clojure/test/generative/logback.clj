@@ -27,7 +27,6 @@
   ^String [event]
   (event/fqname (or (:ns event)
                     (:type event)
-                    (:name event)
                     "root")))
 
 (defn event->logback
@@ -36,7 +35,7 @@
   (let [name (logger-name event)
         logger ^ch.qos.logback.classic.Logger (LoggerFactory/getLogger name)
         msg (delay (binding [*print-length* 50]
-                     (pr-str (dissoc event :level :thread :tstamp :name))))
+                     (pr-str (dissoc event :level :thread :tstamp :thread/name))))
         level (level->logback (:level event))
         logback-event (reify ILoggingEvent
                              (getThreadName [_] (str (:thread/name event)))

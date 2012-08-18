@@ -17,7 +17,7 @@
   []
   "Wait for everything sent to the serializer"
   (send-off serializer (fn [_]))
-  (clojure.core/await))
+  (clojure.core/await serializer))
 
 (defn serialized
   "Returns a function that calls f for side effects, async,
@@ -55,7 +55,7 @@
 
 (def last-dot (atom 0))
 
-(defn dot-progress
+#_(defn dot-progress
   "Prints a dot per event, throttled to ten dots/sec."
   [{:keys [tstamp]}]
   (when (< 100 (- tstamp @last-dot))
@@ -70,17 +70,20 @@
   (reduce
    #(apply derive %1 %2)
    (make-hierarchy)
-   [[:test/test :progress]
-    [:test/iter :progress]
-    [:test/seed :progress]
-    [:test/pass :progress]
-    [:assert/pass :progress]
+   [[:test/iter :ignore]
+    [:test/seed :ignore]
+    [:test/pass :ignore]
+    [:assert/pass :ignore]
     [:assert/summary :ignore]]))
 
 (defmulti console-reporter :type :hierarchy #'report-hierarchy)
 
-(defmethod console-reporter :progress [m] (dot-progress m))
+#_(defmethod console-reporter :progress [m] (dot-progress m))
 (defmethod console-reporter :ignore [_])
+(defmethod console-reporter :test/test
+  [{:keys [tags msec] :as m}]
+  (when (and (tags :end))
+      (println (select-keys m [:msec :test/result :name :count]))))
 (defmethod console-reporter :test/group
   [{:keys [name tags]}]
   (when-not (tags :end)

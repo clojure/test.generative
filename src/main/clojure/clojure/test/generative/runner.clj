@@ -80,7 +80,7 @@
                           (recur (inc iter))
                           (event/report :test/test
                                         :msec (- now start)
-                                        :count iter
+                                        :count (inc iter)
                                         :tags #{:end}
                                         :test/result (if failed? :test/fail :test/pass)
                                         :level (if failed? :warn :info)
@@ -91,13 +91,12 @@
     (doseq [f futs] @f)))
 
 (defn run-batch
-  "Run a batch of fs on nthreads each. Try to divide msec
-   among the fs. Args like run-for."
-  [tests nthreads msec]
+  "Run a batch of fs on nthreads each. Call each f repeatedly
+   for up to test-msec"
+  [tests nthreads test-msec]
   (when (seq tests)
-    (let [msec-per-f (quot msec (count tests))]
-      (doseq [test tests]
-        (run-for test nthreads msec-per-f)))))
+    (doseq [test tests]
+      (run-for test nthreads test-msec))))
 
 (defn failed!
   "Tell the runner that a test failed"
@@ -131,22 +130,25 @@
 (defn run-generative-tests
   "Run generative tests."
   [nses nthreads msec]
-  (doseq [ns nses]
-    (when-let [fs (->> (find-vars-in-namespaces ns)
-                       (filter gentest?)
-                       seq)]
-      (event/report :test/group
-                    :name ns
-                    :tags #{:begin}
-                    :test/threads nthreads
-                    :test/count (count fs))
-      (try
-       (run-batch
-        fs
-        nthreads
-        (quot msec (count nses)))
-       (finally
-        (event/report :test/group :tags #{:end} :test/threads nthreads :test/count (count fs)))))))
+  (let [test-msec (quot msec (count (->> (apply find-vars-in-namespaces nses)
+                                         (filter gentest?)
+                                         seq)))]
+    (doseq [ns nses]
+      (when-let [fs (->> (find-vars-in-namespaces ns)
+                         (filter gentest?)
+                         seq)]
+        (event/report :test/group
+                      :name ns
+                      :tags #{:begin}
+                      :test/threads nthreads
+                      :test/count (count fs))
+        (try
+         (run-batch
+          fs
+          nthreads
+          test-msec)
+         (finally
+          (event/report :test/group :tags #{:end} :test/threads nthreads :test/count (count fs))))))))
 
 (defn run-all-tests
   "Run generative tests and clojure.test tests"
