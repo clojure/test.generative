@@ -29,19 +29,26 @@
 (defmethod ctevent->event :fail
   [e]
   (event/create :type :assert/fail
-                ::ctest/testing-contexts (seq ctest/*testing-contexts*)))
+                :level :warn
+                :message (:message e)
+                :test/actual (:actual e)
+                :test/expected (:expected e)
+                :file (:file e)
+                :line (:line e)
+                ::ctest/contexts (seq ctest/*testing-contexts*)
+                ::ctest/vars (reverse (map #(:name (meta %)) ctest/*testing-vars*))))
 
 (defmethod ctevent->event :error
   [e]
   (event/create :level :error
                 :type :error
-                ::ctest/testing-contexts (seq ctest/*testing-contexts*)
+                ::ctest/contexts (seq ctest/*testing-contexts*)
                 :message (:message e)
                 :test/expected (:expected e)
-                :test/actual (:actual e)
+                :exception (:actual e)
                 :file (:file e)
                 :line (:line e)
-                ::ctest/testing-vars (reverse (map #(:name (meta %)) ctest/*testing-vars*))))
+                ::ctest/vars (reverse (map #(:name (meta %)) ctest/*testing-vars*))))
 
 (defmethod ctevent->event :summary
   [e]

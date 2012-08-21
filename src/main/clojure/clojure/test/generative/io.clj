@@ -81,8 +81,8 @@
 #_(defmethod console-reporter :progress [m] (dot-progress m))
 (defmethod console-reporter :ignore [_])
 (defmethod console-reporter :test/test
-  [{:keys [tags msec] :as m}]
-  (when (and (tags :end))
+  [{:keys [tags msec count] :as m}]
+  (when (and (tags :end) count)
       (println (select-keys m [:msec :test/result :name :count]))))
 (defmethod console-reporter :test/group
   [{:keys [name tags]}]
@@ -93,6 +93,9 @@
   (println (str "\n"
             (apply str (repeat 60 "="))
             "\nRunning " name " tests\n")))
-(defmethod console-reporter :default [m] (pprint m))
+(defmethod console-reporter :default [m]
+  (when-let [^Throwable t (:exception m)]
+    (send-off serializer (fn [_] (.printStackTrace t))))
+  (pprint m))
 
 

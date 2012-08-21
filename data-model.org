@@ -47,6 +47,11 @@
 | :test/pass   |                 |       |      |              |      |         | info  |
 | :assert/pass |                 |       |      |              |      |         | debug |
 | :assert/fail |                 |       |      |              |      |         | debug |
+* Keys particular to c.t.
+| name         | type           |
+|--------------+----------------|
+| c.t/vars     | list of symbol |
+| c.t/contexts | list of string |
 * Test Events in c.t
 | name                | becomes                 | other keys                                       |
 |---------------------+-------------------------+--------------------------------------------------|

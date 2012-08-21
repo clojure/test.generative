@@ -150,6 +150,11 @@
          (finally
           (event/report :test/group :tags #{:end} :test/threads nthreads :test/count (count fs))))))))
 
+(defn has-clojure-test-tests?
+  [ns]
+  (or (contains? (ns-interns ns) 'test-ns-hook)
+      (some (comp :test meta) (vals (ns-interns ns)))))
+
 (defn run-all-tests
   "Run generative tests and clojure.test tests"
   [nses threads msec]
@@ -160,7 +165,7 @@
     (event/with-handler event-counter
       (event/report :test/library :name 'clojure.test)
       (binding [ctest/report cta/report-adapter]
-        (apply ctest/run-tests nses))
+        (apply ctest/run-tests (filter has-clojure-test-tests? nses)))
       (event/report :test/library :name 'clojure.test.generative)
       (run-generative-tests nses threads msec)
       (io/await)
