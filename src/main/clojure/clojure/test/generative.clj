@@ -55,6 +55,8 @@
         (meta &form))))
 
 (defmacro is
+  "Assert that v is true, otherwise fail the current generative
+   test (with optional msg)."
   ([v] (with-meta `(is ~v nil) (meta &form)))
   ([v msg]
      `(let [~'actual ~v ~'expected '~v]
@@ -67,6 +69,28 @@
              (meta &form))))))
 
 (defmacro defspec
+  "Defines a function named name that expects args. The defined
+   function binds '%' to the result of calling fn-to-test with args,
+   and runs validator-body forms (if any), which have access to both
+   args and %. The defined function.
+
+   Args must have type hints (i.e. :tag metdata), which are
+   interpreted as instructions for generating test input
+   data. Unquoted names in type hints are resolved in the
+   c.t.g.generators namespace, which has generator functions for
+   common Clojure data types. For example, the following argument list
+   declares that 'seed' is an int, and that 'iters' is an int in the
+   uniform distribution from 1 to 100:
+
+       [^int seed ^{:tag (uniform 1 100)} iters]
+
+   Backquoted names in an argument list are resolved in the current
+   namespace, allowing arbitrary generators, e.g.
+
+       [^{:tag `scary-word} word]
+
+   The function c.t.g.runner/run-iter takes a var naming a test, and runs
+   a single test iteration, generating inputs based on the arg type hints."
   [name fn-to-test args & validator-body]
   (when-let [missing-tags (->> (map #(list % (-> % meta :tag)) args)
                                (filter (fn [[_ tag]] (nil? tag)))
@@ -76,7 +100,8 @@
                             ::inputs (into [] (map #(-> % meta :tag tag->gen eval)  args))))
      ~(into [] (map (fn [a#] (with-meta a# (dissoc (meta a#) :tag))) args))
      (let [~'% (apply ~fn-to-test ~args)]
-       ~@validator-body)))
+       ~@validator-body
+       ~'%)))
 
 
 

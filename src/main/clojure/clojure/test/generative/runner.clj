@@ -158,18 +158,23 @@
 (defn run-all-tests
   "Run generative tests and clojure.test tests"
   [nses threads msec]
-  (let [event-counts (atom {})
-        event-counter #(when-not (contains? (:tags %) :begin)
-                         (when-let [type (:type %)]
-                           (swap! event-counts update-in [type] (fnil inc 0))))]
-    (event/with-handler event-counter
-      (event/report :test/library :name 'clojure.test)
-      (binding [ctest/report cta/report-adapter]
-        (apply ctest/run-tests (filter has-clojure-test-tests? nses)))
-      (event/report :test/library :name 'clojure.test.generative)
-      (run-generative-tests nses threads msec)
-      (io/await)
-      @event-counts)))
+  (let [run-with-counts
+        (fn [lib f]
+          (let [event-counts (atom {})
+                event-counter #(when-not (contains? (:tags %) :begin)
+                                 (when-let [type (:type %)]
+                                   (swap! event-counts update-in [type] (fnil inc 0))))]
+            (event/report :test/library :name lib)
+            (event/with-handler event-counter (f))
+            @event-counts))
+        ct-results (run-with-counts 'clojure.test
+                     #(binding [ctest/report cta/report-adapter]
+                        (apply ctest/run-tests (filter has-clojure-test-tests? nses))))
+        ctg-results (run-with-counts 'clojure.test.generative
+                      #(run-generative-tests nses threads msec))]
+    (io/await)
+    {'clojure.test ct-results
+     'clojure.test.generative ctg-results}))
 
 (defn failed?
   [result]
@@ -187,9 +192,11 @@
       (doseq [ns nses] (require ns))
       (event/install-default-handlers)
       (try
-       (let [result (run-all-tests nses (:threads conf) (:msec conf))]
-         (println "\n" result)
-         (System/exit (if (failed? result) 1 0)))
+       (let [results (run-all-tests nses (:threads conf) (:msec conf))]
+         (doseq [[k v] results]
+           (println (str "\nFramework " k))
+           (println v))
+         (System/exit (if (some failed? (vals results)) 1 0)))
        (catch Throwable t
          (.printStackTrace t)
          (System/exit -1))

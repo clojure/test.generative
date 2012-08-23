@@ -8,7 +8,8 @@
 ;   You must not remove this notice, or any other, from this software.
 
 (ns clojure.test.generative.event
-  (:require [clojure.test.generative.config :as config]))
+  (:require [clojure.test.generative.config :as config]
+            [clojure.test.generative.io :as io]))
 
 (set! *warn-on-reflection* true)
 
@@ -107,10 +108,13 @@
     (add-handler (load-var-val (symbol handler)))))
 
 (defn report-fn
-  "Call the installed handles for an event"
+  "Call the installed handlers for an event, or io/pprint if no handlers
+   installed."
   [event]
-  (doseq [f @handlers]
-    (f event)))
+  (if-let [hs (seq @handlers)]
+    (doseq [h hs]
+      (h event))
+    (io/pprint event)))
 
 (defmacro report
   [type & args]
