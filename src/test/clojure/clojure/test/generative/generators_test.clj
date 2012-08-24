@@ -1,6 +1,6 @@
 (ns clojure.test.generative.generators-test
   (:use clojure.test.generative
-        [clojure.test :only (deftest)])
+        [clojure.test :only (deftest) :as ct])
   (:require [clojure.test.generative.generators :as gen]))
 
 (defspec test-repeatable-generation
@@ -22,3 +22,7 @@
     (is (= (+ (count longs) (count bools))
            (count %)))))
 
+(defspec test-shuffle
+  gen/shuffle
+  [^{:tag (vec long)} input]
+  (is (= (sort input) (sort %))))

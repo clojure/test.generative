@@ -16,10 +16,89 @@
    [clojure.test.generative.event :as event]
    [clojure.test.generative.generators :as gen]
    [clojure.test.generative.io :as io]
-   [clojure.test.generative.clojure-test-adapter :as cta]
    [clojure.test :as ctest]))
 
 (set! *warn-on-reflection* true)
+
+;; non-nil binding means running inside the framework
+(def ^:dynamic *failed* nil)
+
+(defn failed!
+  "Tell the runner that a test failed"
+  []
+  (when *failed*
+    (deliver *failed* :failed)))
+
+(defmulti ctevent->event
+  "Convert a clojure.test reporting event to an event."
+  :type)
+
+(defmethod ctevent->event :default
+  [e]
+  (event/create :clojure.test/unknown e))
+
+(defmethod ctevent->event :pass
+  [e]
+  (event/create :type :assert/pass))
+
+(defmethod ctevent->event :fail
+  [e]
+  (failed!)
+  (event/create :type :assert/fail
+                :level :warn
+                :message (:message e)
+                :test/actual (:actual e)
+                :test/expected (:expected e)
+                :file (:file e)
+                :line (:line e)
+                ::ctest/contexts (seq ctest/*testing-contexts*)
+                ::ctest/vars (reverse (map #(:name (meta %)) ctest/*testing-vars*))))
+
+(defmethod ctevent->event :error
+  [e]
+  (event/create :level :error
+                :type :error
+                ::ctest/contexts (seq ctest/*testing-contexts*)
+                :message (:message e)
+                :test/expected (:expected e)
+                :exception (:actual e)
+                :file (:file e)
+                :line (:line e)
+                ::ctest/vars (reverse (map #(:name (meta %)) ctest/*testing-vars*))))
+
+(defmethod ctevent->event :summary
+  [e]
+  nil)
+
+(defmethod ctevent->event :begin-test-ns
+  [e]
+  (event/create :type :test/group
+                :tags #{:begin}
+                :name (ns-name (:ns e))))
+
+(defmethod ctevent->event :end-test-ns
+  [e]
+  (event/create :type :test/group
+                :tags #{:end}
+                :name (ns-name (:ns e))))
+
+(defmethod ctevent->event :begin-test-var
+  [e]
+  (event/create :type :test/test
+                :tags #{:begin}
+                :name (event/fqname (:var e))))
+
+(defmethod ctevent->event :end-test-var
+  [e]
+  (event/create :type :test/test
+                :tags #{:end}
+                :name (event/fqname (:var e))))
+
+(defn ct-adapter
+  "Adapt clojure.test event model to fire c.t.g events."
+  [m]
+  (when-let [e (ctevent->event m)]
+    (event/report-fn e)))
 
 (defprotocol Test
   (test-name [_])
@@ -40,9 +119,6 @@
   (test-input
    [v]
    (map #(%) (:clojure.test.generative/inputs (meta v)))))
-
-;; non-nil binding means running inside the framework
-(def ^:dynamic *failed* nil)
 
 (defn run-iter
   "Run a single test iteration"
@@ -99,12 +175,6 @@
     (doseq [test tests]
       (run-for test nthreads test-msec))))
 
-(defn failed!
-  "Tell the runner that a test failed"
-  []
-  (when *failed*
-    (deliver *failed* :failed)))
-
 #_(defn set-seed
   [n]
   (set! gen/*rnd* (java.util.Random. n)))
@@ -160,24 +230,24 @@
 (defn run-all-tests
   "Run generative tests and clojure.test tests"
   [nses threads msec]
-  (let [run-with-counts
-        (fn [lib f]
-          (let [event-counts (atom {})
-                event-counter #(when-not (contains? (:tags %) :begin)
-                                 (when-let [type (:type %)]
-                                   (swap! event-counts update-in [type] (fnil inc 0))))]
-            (event/report :test/library :name lib)
-            (event/with-handler event-counter (f))
-            @event-counts))
-        ct-results (run-with-counts 'clojure.test
-                     #(binding [ctest/report cta/report-adapter]
-                        (when-let [ctnses (seq (filter has-clojure-test-tests? nses))]
-                          (apply ctest/run-tests ctnses))))
-        ctg-results (run-with-counts 'clojure.test.generative
-                      #(run-generative-tests nses threads msec))]
-    (io/await)
-    {'clojure.test ct-results
-     'clojure.test.generative ctg-results}))
+  (binding [ctest/report ct-adapter]
+    (let [run-with-counts
+          (fn [lib f]
+            (let [event-counts (atom {})
+                  event-counter #(when-not (contains? (:tags %) :begin)
+                                   (when-let [type (:type %)]
+                                     (swap! event-counts update-in [type] (fnil inc 0))))]
+              (event/report :test/library :name lib)
+              (event/with-handler event-counter (f))
+              @event-counts))
+          ct-results (run-with-counts 'clojure.test
+                       #(when-let [ctnses (seq (filter has-clojure-test-tests? nses))]
+                          (apply ctest/run-tests ctnses)))
+          ctg-results (run-with-counts 'clojure.test.generative
+                        #(run-generative-tests nses threads msec))]
+      (io/await)
+      {'clojure.test ct-results
+       'clojure.test.generative ctg-results})))
 
 (defn failed?
   [result]

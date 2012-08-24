@@ -277,7 +277,7 @@ instance you can get a repeatable basis for tests."
 (defn shuffle
   "Shuffle coll"
   [coll]
-  (sort-by double coll))
+  (sort-by (fn [_] (long)) coll))
 
 
 

@@ -63,7 +63,7 @@
 (comment
   (require :reload '[clojure.test.generative.event :as event])
   (require :reload '[clojure.test.generative.event.logback :as la])
-  (in-ns 'clojure.test.generative.event.logback-adapter)
+  (in-ns 'clojure.test.generative.event.logback)
   (set! *warn-on-reflection* true)
   (def l (LoggerFactory/getLogger "stu"))
   (.info l "hi")
