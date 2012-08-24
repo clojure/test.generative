@@ -31,6 +31,15 @@
                 (symbol (str ns "/" (.sym v)))
                 (.sym v))))
 
+(defn level-enabled?
+  "Is the event-level enabled?"
+  [event-level enable-level]
+  (case enable-level
+        :error (case event-level (:error) true false)
+        :warn (case event-level (:error :warn) true false)
+        :info (case event-level (:error :warn :info) true false)
+        :debug true))
+
 (def ^long pid
   "Process id"
   (read-string (.getName (java.lang.management.ManagementFactory/getRuntimeMXBean))))

@@ -2,6 +2,6 @@
 # Note: First you must run mvn dependency:build-classpath -Dmdep.outputFile=bin/maven-classpath 
 CLASSPATH=src/main/clojure:src/test/clojure:src/examples/clojure:`cat bin/maven-classpath`
 
-java -server -Xmx2GB -cp $CLASSPATH clojure.main "$@"
+java -server -Xmx2GB $CTG_JAVA_OPTS -cp $CLASSPATH clojure.main "$@"
 
 

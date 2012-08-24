@@ -42,7 +42,6 @@
 | :test/group  | x               | x     |      |              |      |         | info  |
 | :test/iter   |                 |       | x    |              |      |         | info  |
 | :test/test   | x               | x     |      |              | x    |         | info  |
-| :test/seed   |                 |       |      |              |      |         | info  |
 | :test/fail   |                 |       |      |              |      | x       | warn  |
 | :test/pass   |                 |       |      |              |      |         | info  |
 | :assert/pass |                 |       |      |              |      |         | debug |

@@ -9,6 +9,8 @@
 
 (ns clojure.test.generative.runner
   (:require
+   [clojure.java.io :as jio]
+   [clojure.pprint :as pprint]
    [clojure.tools.namespace :as ns]
    [clojure.test.generative.config :as config]
    [clojure.test.generative.event :as event]
@@ -48,11 +50,11 @@
   (let [name (test-name test)
         f (test-fn test)
         input (test-input test)]
-    (event/report :test/iter :name name :args input :tags #{:begin})
+    (event/report :test/iter :level :debug :name name :args input :tags #{:begin})
     (try
      (let [result (apply f input)]
        (when-not (realized? *failed*)
-         (event/report :test/iter :name name :return result :tags #{:end})))
+         (event/report :test/iter :level :debug :name name :return result :tags #{:end})))
      (catch Throwable t
        (deliver *failed* :error)
        (event/report :error :name name :exception t)))))
@@ -66,11 +68,10 @@
               (map
                #(future
                  (try
-                  (event/report :test/seed :test/seed (+ % 42))
                   (binding [gen/*seed* (+ % 42)
                             gen/*rnd* (java.util.Random. gen/*seed*)
                             *failed* (promise)]
-                    (event/report :test/test :tags #{:begin})
+                    (event/report :test/test :tags #{:begin} :test/seed (+ % 42) :name (test-name test))
                     (loop [iter 0]
                       (let [result (run-iter test)
                             now (System/currentTimeMillis)
@@ -184,26 +185,60 @@
       (:test/fail result)
       (:error result)))
 
+(def process-id
+  (delay
+   (java.util.UUID/randomUUID)))
+
+(def storage-writer
+  (delay
+   (let [f (str ".tg/" @process-id)]
+     (jio/make-parents f)
+     (jio/writer f :append true))))
+
+(def store-agent (agent nil))
+
+(def store
+  "store data in .tg/{process-id}"
+  (io/serialized
+   (fn [e]
+     (binding [*print-length* nil
+               *print-level* nil
+               *out* @storage-writer]
+       (println e)))
+   store-agent))
+
+(defn save
+  "Save results at info level or higher, using store."
+  [e]
+  (when (event/level-enabled? (:level e) :info)
+    (store e)))
+
+(defn test-dirs
+  "Runs tests in dirs, returning a map of test lib keyword
+   to summary data"
+  [& dirs]
+  (let [nses (mapcat #(ns/find-namespaces-in-dir (java.io.File. ^String %)) dirs)
+        conf (config/config)]
+    (doseq [ns nses] (require ns))
+    (event/install-default-handlers)
+    (run-all-tests nses (:threads conf) (:msec conf))))
+
 (defn -main
   "Command line entry point, runs all tests in dirs using clojure.test and
    test.generative. Calls System.exit!"
   [& dirs]
   (if (seq dirs)
-    (let [nses (mapcat #(ns/find-namespaces-in-dir (java.io.File. ^String %)) dirs)
-          conf (config/config)]
-      (doseq [ns nses] (require ns))
-      (event/install-default-handlers)
-      (try
-       (let [results (run-all-tests nses (:threads conf) (:msec conf))]
-         (doseq [[k v] results]
-           (println (str "\nFramework " k))
-           (println v))
-         (System/exit (if (some failed? (vals results)) 1 0)))
-       (catch Throwable t
-         (.printStackTrace t)
-         (System/exit -1))
-       (finally
-        (shutdown-agents))))
+    (try
+     (let [results (apply test-dirs dirs)]
+       (doseq [[k v] results]
+         (println (str "\nFramework " k))
+         (println v))
+       (System/exit (if (some failed? (vals results)) 1 0)))
+     (catch Throwable t
+       (.printStackTrace t)
+       (System/exit -1))
+     (finally
+      (shutdown-agents)))
     (do
       (println "Specify at least one directory with tests")
       (System/exit -1))))

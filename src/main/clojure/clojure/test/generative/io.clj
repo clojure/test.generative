@@ -22,12 +22,17 @@
 (defn serialized
   "Returns a function that calls f for side effects, async,
    serialized by an agent"
-  [f]
-  (fn [& args]
-    (send-off serializer
-              (fn [_]
-                (apply f args)
-                nil))))
+  ([f] (serialized f serializer))
+  ([f agt]
+     (fn [& args]
+       (send-off agt
+                 (fn [_]
+                   (try
+                    (apply f args)
+                    (catch Throwable t
+                      (.printStackTrace t)))
+                   nil))
+       nil)))
 
 ;; TODO set from Java property?
 (def ^:private event-print-length 100)
@@ -41,30 +46,17 @@
     (clojure.core/pr-str s)))
 
 (def println
-  "Print with event print settings"
+  "threadsafe print with event print settings"
   (serialized clojure.core/println))
 
 (def pprint
-  "Print with event print settings"
+  "threadsafe pprint with event print settings"
   (serialized
    (fn [s]
      (binding [*print-length* event-print-length
                *print-level* event-print-level]
        (pprint/pprint s)
        (flush)))))
-
-(def last-dot (atom 0))
-
-#_(defn dot-progress
-  "Prints a dot per event, throttled to ten dots/sec."
-  [{:keys [tstamp]}]
-  (when (< 100 (- tstamp @last-dot))
-    (reset! last-dot tstamp)
-    (send-off serializer
-              (fn [_] 
-                (print ".")
-                (flush)
-                nil))))
 
 (def report-hierarchy
   (reduce
@@ -78,7 +70,6 @@
 
 (defmulti console-reporter :type :hierarchy #'report-hierarchy)
 
-#_(defmethod console-reporter :progress [m] (dot-progress m))
 (defmethod console-reporter :ignore [_])
 (defmethod console-reporter :test/test
   [{:keys [tags msec count] :as m}]
