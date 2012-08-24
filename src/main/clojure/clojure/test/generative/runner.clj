@@ -130,25 +130,26 @@
 (defn run-generative-tests
   "Run generative tests."
   [nses nthreads msec]
-  (let [test-msec (quot msec (count (->> (apply find-vars-in-namespaces nses)
-                                         (filter gentest?)
-                                         seq)))]
-    (doseq [ns nses]
-      (when-let [fs (->> (find-vars-in-namespaces ns)
-                         (filter gentest?)
-                         seq)]
-        (event/report :test/group
-                      :name ns
-                      :tags #{:begin}
-                      :test/threads nthreads
-                      :test/count (count fs))
-        (try
-         (run-batch
-          fs
-          nthreads
-          test-msec)
-         (finally
-          (event/report :test/group :tags #{:end} :test/threads nthreads :test/count (count fs))))))))
+  (let [c (count (->> (apply find-vars-in-namespaces nses)
+                      (filter gentest?)))]
+    (when-not (zero? c)
+      (let [test-msec (quot msec c)]
+        (doseq [ns nses]
+          (when-let [fs (->> (find-vars-in-namespaces ns)
+                             (filter gentest?)
+                             seq)]
+            (event/report :test/group
+                          :name ns
+                          :tags #{:begin}
+                          :test/threads nthreads
+                          :test/count (count fs))
+            (try
+             (run-batch
+              fs
+              nthreads
+              test-msec)
+             (finally
+              (event/report :test/group :tags #{:end} :test/threads nthreads :test/count (count fs))))))))))
 
 (defn has-clojure-test-tests?
   [ns]
@@ -169,7 +170,8 @@
             @event-counts))
         ct-results (run-with-counts 'clojure.test
                      #(binding [ctest/report cta/report-adapter]
-                        (apply ctest/run-tests (filter has-clojure-test-tests? nses))))
+                        (when-let [ctnses (seq (filter has-clojure-test-tests? nses))]
+                          (apply ctest/run-tests ctnses))))
         ctg-results (run-with-counts 'clojure.test.generative
                       #(run-generative-tests nses threads msec))]
     (io/await)
