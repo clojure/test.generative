@@ -144,24 +144,25 @@
               (map
                #(future
                  (try
-                  (binding [gen/*seed* (+ % 42)
-                            gen/*rnd* (java.util.Random. gen/*seed*)
-                            *failed* (promise)]
-                    (event/report :test/test :tags #{:begin} :test/seed (+ % 42) :name (test-name test))
-                    (loop [iter 0]
-                      (let [result (run-iter test)
-                            now (System/currentTimeMillis)
-                            failed? (realized? *failed*)]
-                        (if (and (< now (+ start msec))
+                  (let [seed (+ % 42)]
+                    (binding [gen/*seed* seed
+                              gen/*rnd* (java.util.Random. seed)
+                              *failed* (promise)]
+                      (event/report :test/test :tags #{:begin} :test/seed gen/*seed* :name (test-name test))
+                      (loop [iter 0]
+                        (let [result (run-iter test)
+                              now (System/currentTimeMillis)
+                              failed? (realized? *failed*)]
+                          (if (and (< now (+ start msec))
                                    (not failed?))
-                          (recur (inc iter))
-                          (event/report :test/test
-                                        :msec (- now start)
-                                        :count (inc iter)
-                                        :tags #{:end}
-                                        :test/result (if failed? :test/fail :test/pass)
-                                        :level (if failed? :warn :info)
-                                        :name (test-name test))))))
+                            (recur (inc iter))
+                            (event/report :test/test
+                                          :msec (- now start)
+                                          :count (inc iter)
+                                          :tags #{:end}
+                                          :test/result (if failed? :test/fail :test/pass)
+                                          :level (if failed? :warn :info)
+                                          :name (test-name test)))))))
                   (catch Throwable t
                     (event/report :error :level :error :exception t :name (test-name test)))))
                (range nthreads)))]
