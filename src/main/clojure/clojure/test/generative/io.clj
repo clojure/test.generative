@@ -73,11 +73,11 @@
 (defmethod console-reporter :ignore [_])
 (defmethod console-reporter :test/test
   [{:keys [tags msec count] :as m}]
-  (when (and (tags :end) count)
+  (when (and (get tags :end) count)
       (println (select-keys m [:msec :test/result :name :count]))))
 (defmethod console-reporter :test/group
   [{:keys [name tags]}]
-  (when-not (tags :end)
+  (when-not (get tags :end)
       (println (str "\n" name"\n"))))
 (defmethod console-reporter :test/library
   [{:keys [name]}]
