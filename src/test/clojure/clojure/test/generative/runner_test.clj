@@ -20,7 +20,7 @@
       :fn (fn [n] (swap! adder + n))
       :inputs (fn [] [[1] [2] [3]])}
      1
-     100)
+     Integer/MAX_VALUE)
     (is (= @adder (apply + (map first inputs))))))
 
 (defmethod runner/var-tests ::custom-type
