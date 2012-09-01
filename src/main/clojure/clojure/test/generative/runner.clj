@@ -100,40 +100,17 @@
   (when-let [e (ctevent->event m)]
     (event/report-fn e)))
 
-(defprotocol Test
-  (test-name [_])
-  (test-fn [_])
-  (test-input [_]))
-
-(extend-protocol Test
-  clojure.lang.Var
-  (test-name
-   [v]
-   (-> (when-let [ns (.ns v)]
-         (str ns "/" (.sym v))
-         (.sym v))
-       symbol))
-  (test-fn
-   [this]
-   @this)
-  (test-input
-   [v]
-   (map #(%) (:clojure.test.generative/inputs (meta v)))))
-
 (defn run-iter
   "Run a single test iteration"
-  [test]
-  (let [name (test-name test)
-        f (test-fn test)
-        input (test-input test)]
-    (event/report :test/iter :level :debug :name name :args input :tags #{:begin})
-    (try
-     (let [result (apply f input)]
-       (when-not (realized? *failed*)
-         (event/report :test/iter :level :debug :name name :return result :tags #{:end})))
-     (catch Throwable t
-       (deliver *failed* :error)
-       (event/report :error :name name :exception t)))))
+  [name f input]
+  (event/report :test/iter :level :debug :name name :args input :tags #{:begin})
+  (try
+   (let [result (apply f input)]
+     (when-not (realized? *failed*)
+       (event/report :test/iter :level :debug :name name :return result :tags #{:end})))
+   (catch Throwable t
+     (deliver *failed* :error)
+     (event/report :error :name name :exception t))))
 
 (defn run-for
   "Run f (presumably for side effects) repeatedly on n threads,
@@ -144,27 +121,38 @@
               (map
                #(future
                  (try
-                  (let [seed (+ % 42)]
+                  (let [seed (+ % 42)
+                        name (:name test)
+                        f (:fn test)]
                     (binding [gen/*seed* seed
                               gen/*rnd* (java.util.Random. seed)
                               *failed* (promise)]
-                      (event/report :test/test :tags #{:begin} :test/seed gen/*seed* :name (test-name test))
-                      (loop [iter 0]
-                        (let [result (run-iter test)
-                              now (System/currentTimeMillis)
+                      (event/report :test/test :tags #{:begin} :test/seed gen/*seed* :name name)
+                      (loop [iter 0
+                             [input & more] ((:inputs test))]
+                        (let [now (System/currentTimeMillis)
                               failed? (realized? *failed*)]
-                          (if (and (< now (+ start msec))
-                                   (not failed?))
-                            (recur (inc iter))
+                          (if input
+                            (let [result (run-iter name f input)]
+                              (if (and (< now (+ start msec))
+                                       (not failed?))
+                                (recur (inc iter) more)
+                                (event/report :test/test
+                                              :msec (- now start)
+                                              :count (inc iter)
+                                              :tags #{:end}
+                                              :test/result (if failed? :test/fail :test/pass)
+                                              :level (if failed? :warn :info)
+                                              :name name)))
                             (event/report :test/test
                                           :msec (- now start)
                                           :count (inc iter)
-                                          :tags #{:end}
+                                          :tags #{:end :test/inputs-exhausted}
                                           :test/result (if failed? :test/fail :test/pass)
                                           :level (if failed? :warn :info)
-                                          :name (test-name test)))))))
+                                          :name name))))))
                   (catch Throwable t
-                    (event/report :error :level :error :exception t :name (test-name test)))))
+                    (event/report :error :level :error :exception t :name name))))
                (range nthreads)))]
     (doseq [f futs] @f)))
 
@@ -176,13 +164,39 @@
     (doseq [test tests]
       (run-for test nthreads test-msec))))
 
-#_(defn set-seed
-  [n]
-  (set! gen/*rnd* (java.util.Random. n)))
+(defmulti var-tests
+  "TestContainer.tests support for vars. To create custom test
+   types, define vars that have :c.t.g/type metadata, and then add
+   a matching var-tests method that returns a collection of tests."
+  (fn [v] (:clojure.test.generative/type (meta v))))
 
-(defn gentest?
-  [v]
-  (boolean (:clojure.test.generative/inputs (meta v))))
+(defmethod var-tests :defspec [^clojure.lang.Var v]
+  [{:name  (-> (when-let [ns (.ns v)]
+                 (str ns "/" (.sym v))
+                 (.sym v))
+               symbol)
+    :fn @v
+    :inputs (fn []
+              (repeatedly
+               (fn []
+                 (mapv #(%) (:clojure.test.generative/arg-fns (meta v))))))}])
+
+(defmethod var-tests nil [v] nil)
+
+(defprotocol TestContainer
+  (tests
+   [_]
+   "Returns a collection of generative tests, where a test is a map with
+      :name     ns-qualified symbol
+      :fn       fn to test
+      :inputs   fn returning a (possibly infinite!) sequence of inputs
+
+   All input generation should use gen/*seed* and gen/*rnd*
+   if a source of pseudo-randomness is needed."))
+
+(extend-protocol TestContainer
+  clojure.lang.Var
+  (tests [v] (var-tests v)))
 
 (defn find-vars-in-namespaces
   [& nses]
@@ -195,20 +209,16 @@
     (doseq [ns nses] (require ns))
     (apply find-vars-in-namespaces nses)))
 
-(defn find-gentests-in-vars
-  [& vars]
-  (filter gentest? vars))
-
 (defn run-generative-tests
   "Run generative tests."
   [nses nthreads msec]
   (let [c (count (->> (apply find-vars-in-namespaces nses)
-                      (filter gentest?)))]
+                      (mapcat tests)))]
     (when-not (zero? c)
       (let [test-msec (quot msec c)]
         (doseq [ns nses]
           (when-let [fs (->> (find-vars-in-namespaces ns)
-                             (filter gentest?)
+                             (mapcat tests)
                              seq)]
             (event/report :test/group
                           :name ns
@@ -300,11 +310,15 @@
   [& dirs]
   (if (seq dirs)
     (try
-     (let [results (apply test-dirs dirs)]
+     (let [results (apply test-dirs dirs)
+           failed? (boolean (some failed? (vals results)))]
        (doseq [[k v] results]
          (println (str "\nFramework " k))
          (println v))
-       (System/exit (if (some failed? (vals results)) 1 0)))
+       (when failed?
+         (binding [*out* *err*]
+           (println "\n*** Some tests failed ***\n")))
+       (System/exit (if failed? 1 0)))
      (catch Throwable t
        (.printStackTrace t)
        (System/exit -1))

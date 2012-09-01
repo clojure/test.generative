@@ -97,7 +97,8 @@
                                seq)]
     (throw (IllegalArgumentException. (str "Missing tags for " (seq (map first missing-tags)) " in " name))))
   `(defn ~(with-meta name (assoc (meta name)
-                            ::inputs (into [] (map #(-> % meta :tag tag->gen eval)  args))))
+                            ::type :defspec
+                            ::arg-fns (into [] (map #(-> % meta :tag tag->gen eval)  args))))
      ~(into [] (map (fn [a#] (with-meta a# (dissoc (meta a#) :tag))) args))
      (let [~'% (apply ~fn-to-test ~args)]
        ~@validator-body
