@@ -179,7 +179,7 @@
     :inputs (fn []
               (repeatedly
                (fn []
-                 (mapv #(%) (:clojure.test.generative/arg-fns (meta v))))))}])
+                 (into [] (map #(%) (:clojure.test.generative/arg-fns (meta v)))))))}])
 
 (defmethod var-tests nil [v] nil)
 
