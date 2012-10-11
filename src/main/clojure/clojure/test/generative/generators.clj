@@ -274,10 +274,25 @@ instance you can get a repeatable basis for tests."
   []
   (one-of scalar collection))
 
+(defn ^:private fisher-yates
+  "http://en.wikipedia.org/wiki/Fisher–Yates_shuffle#The_modern_algorithm"
+  [coll]
+  (let [as (object-array coll)]
+    (loop [i (dec (count as))]
+      (if (<= 1 i)
+        (let [j (uniform 0 (inc i))
+              t (aget as i)]
+          (aset as i (aget as j))
+          (aset as j t)
+          (recur (dec i)))
+        (into (empty coll) (seq as))))))
+
 (defn shuffle
   "Shuffle coll"
   [coll]
-  (sort-by (fn [_] (long)) coll))
+  ;; using our own fischer-yates instead of core/shuffle so that
+  ;; we'll get the same shuffle, given the same random *seed*.
+  (fisher-yates coll))
 
 
 
