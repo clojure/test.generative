@@ -127,7 +127,7 @@ instance you can get a repeatable basis for tests."
 (defn printable-ascii-char
   "Returns a random printable ascii character."
   []
-  (core/char (uniform 32 128)))
+  (core/char (uniform 32 127)))
 
 (defn char
   "Returns a random character in the range 0-65536."
