@@ -9,7 +9,7 @@
 
 (ns clojure.test.hash-test
   (:use clojure.test.generative)
-  (:require [clojure.test.generative.generators :as gen]))
+  (:require [clojure.data.generators :as gen]))
 
 (defn hash-obj
   [h]

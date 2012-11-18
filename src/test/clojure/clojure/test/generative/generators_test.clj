@@ -1,7 +1,7 @@
 (ns clojure.test.generative.generators-test
   (:use clojure.test.generative
         [clojure.test :only (deftest) :as ct])
-  (:require [clojure.test.generative.generators :as gen]))
+  (:require [clojure.data.generators :as gen]))
 
 (defspec test-repeatable-generation
   (constantly nil)

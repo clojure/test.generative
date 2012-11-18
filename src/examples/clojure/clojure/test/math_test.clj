@@ -9,7 +9,7 @@
 
 (ns clojure.test.math-test
   (:use clojure.test.generative)
-  (:require [clojure.test.generative.generators :as gen]))
+  (:require [clojure.data.generators :as gen]))
 
 (defn integer
   "Distribution of integers biased towards the small, but

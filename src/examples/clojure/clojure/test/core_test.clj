@@ -9,7 +9,7 @@
 
 (ns clojure.test.core-test
   (:use clojure.test.generative clojure.pprint clojure.data clojure.walk)
-  (:require [clojure.test.generative.generators :as gen]))
+  (:require [clojure.data.generators :as gen]))
 
 (def ^:private failed-diff-ref (atom nil))
 

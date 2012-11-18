@@ -14,7 +14,7 @@
    [clojure.tools.namespace :as ns]
    [clojure.test.generative.config :as config]
    [clojure.test.generative.event :as event]
-   [clojure.test.generative.generators :as gen]
+   [clojure.data.generators :as gen]
    [clojure.test.generative.io :as io]
    [clojure.test :as ctest]))
 
@@ -146,7 +146,7 @@
                                               :name name)))
                             (event/report :test/test
                                           :msec (- now start)
-                                          :count (inc iter)
+                                          :count iter
                                           :tags #{:end :test/inputs-exhausted}
                                           :test/result (if failed? :test/fail :test/pass)
                                           :level (if failed? :warn :info)

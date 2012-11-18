@@ -13,7 +13,7 @@
 
 (deftest test-fully-qualified
   (is (= 'a/b (@#'test/fully-qualified 'a/b)))
-  (is (= 'clojure.test.generative.generators/long (@#'test/fully-qualified 'long))))
+  (is (= 'clojure.data.generators/long (@#'test/fully-qualified 'long))))
 
 
 

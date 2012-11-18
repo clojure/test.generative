@@ -14,14 +14,14 @@
 
 (defn- fully-qualified
   "Qualify a name used in :tag metadata. Unqualified names are
-   interpreted in the 'clojure.test.generative.generators, except
+   interpreted in the 'clojure.data.generators, except
    for the fn-building symbols fn and fn*."
   [n]
   (let [ns (cond
             (#{'fn*} n) nil
             (#{'fn} n) 'clojure.core
             (namespace n) (namespace n)
-            :else 'clojure.test.generative.generators)]
+            :else 'clojure.data.generators)]
     (if ns
       (symbol (str ns) (name n))
       n)))
