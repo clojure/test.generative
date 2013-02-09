@@ -124,10 +124,9 @@
                   (let [seed (+ % 42)
                         name (:name test)
                         f (:fn test)]
-                    (binding [gen/*seed* seed
-                              gen/*rnd* (java.util.Random. seed)
+                    (binding [gen/*rnd* (java.util.Random. seed)
                               *failed* (promise)]
-                      (event/report :test/test :tags #{:begin} :test/seed gen/*seed* :name name)
+                      (event/report :test/test :tags #{:begin} :test/seed seed :name name)
                       (loop [iter 0
                              [input & more] ((:inputs test))]
                         (let [now (System/currentTimeMillis)
@@ -191,7 +190,7 @@
       :fn       fn to test
       :inputs   fn returning a (possibly infinite!) sequence of inputs
 
-   All input generation should use gen/*seed* and gen/*rnd*
+   All input generation should use and gen/*rnd*
    if a source of pseudo-randomness is needed."))
 
 (extend-protocol TestContainer
