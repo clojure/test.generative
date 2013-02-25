@@ -11,6 +11,7 @@
   (:require
    [clojure.java.io :as jio]
    [clojure.pprint :as pprint]
+   [clojure.stacktrace :as stacktrace]
    [clojure.tools.namespace :as ns]
    [clojure.test.generative.config :as config]
    [clojure.test.generative.event :as event]
@@ -319,7 +320,7 @@
            (println "\n*** Some tests failed ***\n")))
        (System/exit (if failed? 1 0)))
      (catch Throwable t
-       (.printStackTrace t)
+       (stacktrace/print-cause-trace t)
        (System/exit -1))
      (finally
       (shutdown-agents)))
