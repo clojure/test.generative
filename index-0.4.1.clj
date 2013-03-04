@@ -16,6 +16,12 @@
    :wiki-url
    "http://clojure.github.com/test.generative/clojure.test.generative.io-api.html",
    :name "clojure.test.generative.io",
+   :doc nil}
+  {:source-url
+   "https://github.com/clojure/test.generative/blob/1afc5a6befa1e92dbad22ca336a1188b37d6bd11/src/main/clojure/clojure/test/generative/logback.clj",
+   :wiki-url
+   "http://clojure.github.com/test.generative/clojure.test.generative.logback-api.html",
+   :name "clojure.test.generative.logback",
    :doc nil}),
  :vars
  ({:arglists ([f]),
@@ -213,4 +219,17 @@
    "Returns a function that calls f for side effects, async,\nserialized by an agent",
    :var-type "function",
    :line 22,
-   :file "src/main/clojure/clojure/test/generative/io.clj"})}
+   :file "src/main/clojure/clojure/test/generative/io.clj"}
+  {:arglists ([event]),
+   :name "event->logback",
+   :namespace "clojure.test.generative.logback",
+   :source-url
+   "https://github.com/clojure/test.generative/blob/1afc5a6befa1e92dbad22ca336a1188b37d6bd11/src/main/clojure/clojure/test/generative/logback.clj#L32",
+   :raw-source-url
+   "https://github.com/clojure/test.generative/raw/1afc5a6befa1e92dbad22ca336a1188b37d6bd11/src/main/clojure/clojure/test/generative/logback.clj",
+   :wiki-url
+   "http://clojure.github.com/test.generative//clojure.test.generative-api.html#clojure.test.generative.logback/event->logback",
+   :doc "Returns map with keys :logger, :event, :fire",
+   :var-type "function",
+   :line 32,
+   :file "src/main/clojure/clojure/test/generative/logback.clj"})}
