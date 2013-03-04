@@ -52,8 +52,14 @@ namespace.
     <a href="#" style="margin-top: 3px;"></a>
     
   </div><div style="margin-left: 1em;" class="toc-section">
-    <a href="#" style="margin-top: 3px;"></a>
-    
+    <a href="#var-section" style="margin-top: 3px;">Vars and Functions</a>
+    <div style="margin-left: 1em;" class="toc-entry">
+      <a class="toc-entry-anchor" href="#clojure.test.generative/defspec">defspec</a>
+      
+    </div><div style="margin-left: 1em;" class="toc-entry">
+      <a class="toc-entry-anchor" href="#clojure.test.generative/is">is</a>
+      
+    </div>
   </div><div style="margin-left: 1em;" class="toc-section">
     <a href="#clojure.test.generative.event" style="margin-top: 3px;">clojure.test.generative.event</a>
     <div style="margin-left: 1em;" class="toc-entry">
@@ -111,6 +117,47 @@ namespace.
       <a class="toc-entry-anchor" href="#clojure.test.generative.logback/event-&gt;logback">event-&gt;logback</a>
       
     </div>
+  </div><div style="margin-left: 1em;" class="toc-section">
+    <a href="#clojure.test.generative.runner" style="margin-top: 3px;">clojure.test.generative.runner</a>
+    <div style="margin-left: 1em;" class="toc-entry">
+      <a class="toc-entry-anchor" href="#clojure.test.generative.runner/TestContainer">TestContainer</a>
+      <div style="margin-left: 1em;" class="toc-subentry">
+        <a class="toc-subentry-anchor" href="#clojure.test.generative.runner/tests">tests</a>
+      </div>
+    </div><div style="margin-left: 1em;" class="toc-entry">
+      <a class="toc-entry-anchor" href="#clojure.test.generative.runner/-main">-main</a>
+      
+    </div><div style="margin-left: 1em;" class="toc-entry">
+      <a class="toc-entry-anchor" href="#clojure.test.generative.runner/ct-adapter">ct-adapter</a>
+      
+    </div><div style="margin-left: 1em;" class="toc-entry">
+      <a class="toc-entry-anchor" href="#clojure.test.generative.runner/failed!">failed!</a>
+      
+    </div><div style="margin-left: 1em;" class="toc-entry">
+      <a class="toc-entry-anchor" href="#clojure.test.generative.runner/run-all-tests">run-all-tests</a>
+      
+    </div><div style="margin-left: 1em;" class="toc-entry">
+      <a class="toc-entry-anchor" href="#clojure.test.generative.runner/run-batch">run-batch</a>
+      
+    </div><div style="margin-left: 1em;" class="toc-entry">
+      <a class="toc-entry-anchor" href="#clojure.test.generative.runner/run-for">run-for</a>
+      
+    </div><div style="margin-left: 1em;" class="toc-entry">
+      <a class="toc-entry-anchor" href="#clojure.test.generative.runner/run-generative-tests">run-generative-tests</a>
+      
+    </div><div style="margin-left: 1em;" class="toc-entry">
+      <a class="toc-entry-anchor" href="#clojure.test.generative.runner/run-iter">run-iter</a>
+      
+    </div><div style="margin-left: 1em;" class="toc-entry">
+      <a class="toc-entry-anchor" href="#clojure.test.generative.runner/save">save</a>
+      
+    </div><div style="margin-left: 1em;" class="toc-entry">
+      <a class="toc-entry-anchor" href="#clojure.test.generative.runner/store">store</a>
+      
+    </div><div style="margin-left: 1em;" class="toc-entry">
+      <a class="toc-entry-anchor" href="#clojure.test.generative.runner/test-dirs">test-dirs</a>
+      
+    </div>
   </div>
 </div>
 </div>
@@ -129,7 +176,56 @@ namespace.
 
 
 
+<div id="var-section">
+  <p></p>
+  <h2>Public Variables and Functions</h2>
+  <div id="var-entry">
+    <br />
+    <hr />
+    <h2 id="clojure.test.generative/defspec">defspec</h2>
+    <span id="var-type">macro</span><br />
+    <pre id="var-usage">Usage: (defspec name fn-to-test args &amp; validator-body)
+</pre>
+    <pre id="var-docstr">Defines a function named name that expects args. The defined
+function binds '%' to the result of calling fn-to-test with args,
+and runs validator-body forms (if any), which have access to both
+args and %. The defined function.
 
+Args must have type hints (i.e. :tag metdata), which are
+interpreted as instructions for generating test input
+data. Unquoted names in type hints are resolved in the
+c.t.g.generators namespace, which has generator functions for
+common Clojure data types. For example, the following argument list
+declares that 'seed' is an int, and that 'iters' is an int in the
+uniform distribution from 1 to 100:
+
+    [^int seed ^{:tag (uniform 1 100)} iters]
+
+Backquoted names in an argument list are resolved in the current
+namespace, allowing arbitrary generators, e.g.
+
+    [^{:tag `scary-word} word]
+
+The function c.t.g.runner/run-iter takes a var naming a test, and runs
+a single test iteration, generating inputs based on the arg type hints.</pre>
+    
+    
+    <a href="https://github.com/clojure/test.generative/blob/4d384cf40f29f8a044a90f5711e11564218715ac/src/main/clojure/clojure/test/generative.clj#L71" id="var-source">Source</a>
+  </div><div id="var-entry">
+    <br />
+    <hr />
+    <h2 id="clojure.test.generative/is">is</h2>
+    <span id="var-type">macro</span><br />
+    <pre id="var-usage">Usage: (is v)
+       (is v msg)
+</pre>
+    <pre id="var-docstr">Assert that v is true, otherwise fail the current generative
+test (with optional msg).</pre>
+    
+    
+    <a href="https://github.com/clojure/test.generative/blob/4d384cf40f29f8a044a90f5711e11564218715ac/src/main/clojure/clojure/test/generative.clj#L57" id="var-source">Source</a>
+  </div>
+</div>
 <br />
 <h2 id="clojure.test.generative.event">clojure.test.generative.event</h2>
 <pre id="namespace-docstr"></pre>
@@ -346,6 +442,174 @@ serialized by an agent</pre>
     
     
     <a href="https://github.com/clojure/test.generative/blob/1afc5a6befa1e92dbad22ca336a1188b37d6bd11/src/main/clojure/clojure/test/generative/logback.clj#L32" id="var-source">Source</a>
+  </div>
+</div>
+<br />
+<h2 id="clojure.test.generative.runner">clojure.test.generative.runner</h2>
+<pre id="namespace-docstr"></pre>
+
+
+<br />
+<div id="proto-section">
+  <p></p>
+  <h2>Protocols</h2>
+  <div id="proto-entry">
+    <br />
+    <hr />
+    <h2 id="clojure.test.generative.runner/TestContainer">TestContainer</h2>
+    <span id="proto-type">Protocol</span><br />
+    <pre id="proto-docstr"></pre>
+    Known implementations: <span id="proto-impls">clojure.lang.Var</span>
+    <div id="proto-var-entry">
+      <br />
+      <h3 id="clojure.test.generative.runner/tests">tests</h3>
+      <span id="var-type">function</span><br />
+      <pre id="var-usage">Usage: (tests _)
+</pre>
+      <pre id="var-docstr">Returns a collection of generative tests, where a test is a map with
+   :name     ns-qualified symbol
+   :fn       fn to test
+   :inputs   fn returning a (possibly infinite!) sequence of inputs
+
+All input generation should use and gen/*rnd*
+if a source of pseudo-randomness is needed.</pre>
+      
+      
+      
+    </div>
+    
+    
+    <a href="https://github.com/clojure/test.generative/blob/f7d531ba4969ef21ddd898f78812624175ebd7cf/src/main/clojure/clojure/test/generative/runner.clj#L185" id="proto-source">Source</a>
+  </div>
+</div>
+
+<div id="var-section">
+  <p></p>
+  <h2>Public Variables and Functions</h2>
+  <div id="var-entry">
+    <br />
+    <hr />
+    <h2 id="clojure.test.generative.runner/-main">-main</h2>
+    <span id="var-type">function</span><br />
+    <pre id="var-usage">Usage: (-main &amp; dirs)
+</pre>
+    <pre id="var-docstr">Command line entry point, runs all tests in dirs using clojure.test and
+test.generative. Calls System.exit!</pre>
+    
+    
+    <a href="https://github.com/clojure/test.generative/blob/f7d531ba4969ef21ddd898f78812624175ebd7cf/src/main/clojure/clojure/test/generative/runner.clj#L306" id="var-source">Source</a>
+  </div><div id="var-entry">
+    <br />
+    <hr />
+    <h2 id="clojure.test.generative.runner/ct-adapter">ct-adapter</h2>
+    <span id="var-type">function</span><br />
+    <pre id="var-usage">Usage: (ct-adapter m)
+</pre>
+    <pre id="var-docstr">Adapt clojure.test event model to fire c.t.g events.</pre>
+    
+    
+    <a href="https://github.com/clojure/test.generative/blob/f7d531ba4969ef21ddd898f78812624175ebd7cf/src/main/clojure/clojure/test/generative/runner.clj#L97" id="var-source">Source</a>
+  </div><div id="var-entry">
+    <br />
+    <hr />
+    <h2 id="clojure.test.generative.runner/failed!">failed!</h2>
+    <span id="var-type">function</span><br />
+    <pre id="var-usage">Usage: (failed!)
+</pre>
+    <pre id="var-docstr">Tell the runner that a test failed</pre>
+    
+    
+    <a href="https://github.com/clojure/test.generative/blob/f7d531ba4969ef21ddd898f78812624175ebd7cf/src/main/clojure/clojure/test/generative/runner.clj#L26" id="var-source">Source</a>
+  </div><div id="var-entry">
+    <br />
+    <hr />
+    <h2 id="clojure.test.generative.runner/run-all-tests">run-all-tests</h2>
+    <span id="var-type">function</span><br />
+    <pre id="var-usage">Usage: (run-all-tests nses threads msec)
+</pre>
+    <pre id="var-docstr">Run generative tests and clojure.test tests</pre>
+    
+    
+    <a href="https://github.com/clojure/test.generative/blob/f7d531ba4969ef21ddd898f78812624175ebd7cf/src/main/clojure/clojure/test/generative/runner.clj#L240" id="var-source">Source</a>
+  </div><div id="var-entry">
+    <br />
+    <hr />
+    <h2 id="clojure.test.generative.runner/run-batch">run-batch</h2>
+    <span id="var-type">function</span><br />
+    <pre id="var-usage">Usage: (run-batch tests nthreads test-msec)
+</pre>
+    <pre id="var-docstr">Run a batch of fs on nthreads each. Call each f repeatedly
+for up to test-msec</pre>
+    
+    
+    <a href="https://github.com/clojure/test.generative/blob/f7d531ba4969ef21ddd898f78812624175ebd7cf/src/main/clojure/clojure/test/generative/runner.clj#L158" id="var-source">Source</a>
+  </div><div id="var-entry">
+    <br />
+    <hr />
+    <h2 id="clojure.test.generative.runner/run-for">run-for</h2>
+    <span id="var-type">function</span><br />
+    <pre id="var-usage">Usage: (run-for test nthreads msec)
+</pre>
+    <pre id="var-docstr">Run f (presumably for side effects) repeatedly on n threads,
+until msec has passed or somebody signals *failed*</pre>
+    
+    
+    <a href="https://github.com/clojure/test.generative/blob/f7d531ba4969ef21ddd898f78812624175ebd7cf/src/main/clojure/clojure/test/generative/runner.clj#L115" id="var-source">Source</a>
+  </div><div id="var-entry">
+    <br />
+    <hr />
+    <h2 id="clojure.test.generative.runner/run-generative-tests">run-generative-tests</h2>
+    <span id="var-type">function</span><br />
+    <pre id="var-usage">Usage: (run-generative-tests nses nthreads msec)
+</pre>
+    <pre id="var-docstr">Run generative tests.</pre>
+    
+    
+    <a href="https://github.com/clojure/test.generative/blob/f7d531ba4969ef21ddd898f78812624175ebd7cf/src/main/clojure/clojure/test/generative/runner.clj#L211" id="var-source">Source</a>
+  </div><div id="var-entry">
+    <br />
+    <hr />
+    <h2 id="clojure.test.generative.runner/run-iter">run-iter</h2>
+    <span id="var-type">function</span><br />
+    <pre id="var-usage">Usage: (run-iter name f input)
+</pre>
+    <pre id="var-docstr">Run a single test iteration</pre>
+    
+    
+    <a href="https://github.com/clojure/test.generative/blob/f7d531ba4969ef21ddd898f78812624175ebd7cf/src/main/clojure/clojure/test/generative/runner.clj#L103" id="var-source">Source</a>
+  </div><div id="var-entry">
+    <br />
+    <hr />
+    <h2 id="clojure.test.generative.runner/save">save</h2>
+    <span id="var-type">function</span><br />
+    <pre id="var-usage">Usage: (save e)
+</pre>
+    <pre id="var-docstr">Save results at info level or higher, using store.</pre>
+    
+    
+    <a href="https://github.com/clojure/test.generative/blob/f7d531ba4969ef21ddd898f78812624175ebd7cf/src/main/clojure/clojure/test/generative/runner.clj#L290" id="var-source">Source</a>
+  </div><div id="var-entry">
+    <br />
+    <hr />
+    <h2 id="clojure.test.generative.runner/store">store</h2>
+    <span id="var-type">var</span><br />
+    <pre id="var-usage"></pre>
+    <pre id="var-docstr">store data in .tg/{process-id}</pre>
+    
+    
+    <a href="https://github.com/clojure/test.generative/blob/f7d531ba4969ef21ddd898f78812624175ebd7cf/src/main/clojure/clojure/test/generative/runner.clj#L280" id="var-source">Source</a>
+  </div><div id="var-entry">
+    <br />
+    <hr />
+    <h2 id="clojure.test.generative.runner/test-dirs">test-dirs</h2>
+    <span id="var-type">function</span><br />
+    <pre id="var-usage">Usage: (test-dirs &amp; dirs)
+</pre>
+    <pre id="var-docstr">Runs tests in dirs, returning a map of test lib keyword
+to summary data</pre>
+    
+    
+    <a href="https://github.com/clojure/test.generative/blob/f7d531ba4969ef21ddd898f78812624175ebd7cf/src/main/clojure/clojure/test/generative/runner.clj#L296" id="var-source">Source</a>
   </div>
 </div>
 
