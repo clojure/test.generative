@@ -294,6 +294,18 @@
    :var-type "function",
    :line 97,
    :file "src/main/clojure/clojure/test/generative/runner.clj"}
+  {:file "src/main/clojure/clojure/test/generative/runner.clj",
+   :raw-source-url
+   "https://github.com/clojure/test.generative/raw/f7d531ba4969ef21ddd898f78812624175ebd7cf/src/main/clojure/clojure/test/generative/runner.clj",
+   :source-url
+   "https://github.com/clojure/test.generative/blob/f7d531ba4969ef21ddd898f78812624175ebd7cf/src/main/clojure/clojure/test/generative/runner.clj#L32",
+   :wiki-url
+   "http://clojure.github.com/test.generative//clojure.test.generative-api.html#clojure.test.generative.runner/ctevent->event",
+   :namespace "clojure.test.generative.runner",
+   :line 32,
+   :var-type "multimethod",
+   :doc "Convert a clojure.test reporting event to an event.",
+   :name "ctevent->event"}
   {:arglists ([]),
    :name "failed!",
    :namespace "clojure.test.generative.runner",
@@ -413,6 +425,19 @@
    :var-type "function",
    :line 296,
    :file "src/main/clojure/clojure/test/generative/runner.clj"}
+  {:file "src/main/clojure/clojure/test/generative/runner.clj",
+   :raw-source-url
+   "https://github.com/clojure/test.generative/raw/f7d531ba4969ef21ddd898f78812624175ebd7cf/src/main/clojure/clojure/test/generative/runner.clj",
+   :source-url
+   "https://github.com/clojure/test.generative/blob/f7d531ba4969ef21ddd898f78812624175ebd7cf/src/main/clojure/clojure/test/generative/runner.clj#L166",
+   :wiki-url
+   "http://clojure.github.com/test.generative//clojure.test.generative-api.html#clojure.test.generative.runner/var-tests",
+   :namespace "clojure.test.generative.runner",
+   :line 166,
+   :var-type "multimethod",
+   :doc
+   "TestContainer.tests support for vars. To create custom test\ntypes, define vars that have :c.t.g/type metadata, and then add\na matching var-tests method that returns a collection of tests.",
+   :name "var-tests"}
   {:file "src/main/clojure/clojure/test/generative/runner.clj",
    :raw-source-url
    "https://github.com/clojure/test.generative/raw/f7d531ba4969ef21ddd898f78812624175ebd7cf/src/main/clojure/clojure/test/generative/runner.clj",

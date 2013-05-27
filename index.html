@@ -131,6 +131,9 @@ namespace.
       <a class="toc-entry-anchor" href="#clojure.test.generative.runner/ct-adapter">ct-adapter</a>
       
     </div><div style="margin-left: 1em;" class="toc-entry">
+      <a class="toc-entry-anchor" href="#clojure.test.generative.runner/ctevent-&gt;event">ctevent-&gt;event</a>
+      
+    </div><div style="margin-left: 1em;" class="toc-entry">
       <a class="toc-entry-anchor" href="#clojure.test.generative.runner/failed!">failed!</a>
       
     </div><div style="margin-left: 1em;" class="toc-entry">
@@ -156,6 +159,9 @@ namespace.
       
     </div><div style="margin-left: 1em;" class="toc-entry">
       <a class="toc-entry-anchor" href="#clojure.test.generative.runner/test-dirs">test-dirs</a>
+      
+    </div><div style="margin-left: 1em;" class="toc-entry">
+      <a class="toc-entry-anchor" href="#clojure.test.generative.runner/var-tests">var-tests</a>
       
     </div>
   </div>
@@ -512,6 +518,16 @@ test.generative. Calls System.exit!</pre>
   </div><div id="var-entry">
     <br />
     <hr />
+    <h2 id="clojure.test.generative.runner/ctevent-&gt;event">ctevent-&gt;event</h2>
+    <span id="var-type">multimethod</span><br />
+    <pre id="var-usage">No usage documentation available</pre>
+    <pre id="var-docstr">Convert a clojure.test reporting event to an event.</pre>
+    
+    
+    <a href="https://github.com/clojure/test.generative/blob/f7d531ba4969ef21ddd898f78812624175ebd7cf/src/main/clojure/clojure/test/generative/runner.clj#L32" id="var-source">Source</a>
+  </div><div id="var-entry">
+    <br />
+    <hr />
     <h2 id="clojure.test.generative.runner/failed!">failed!</h2>
     <span id="var-type">function</span><br />
     <pre id="var-usage">Usage: (failed!)
@@ -610,6 +626,18 @@ to summary data</pre>
     
     
     <a href="https://github.com/clojure/test.generative/blob/f7d531ba4969ef21ddd898f78812624175ebd7cf/src/main/clojure/clojure/test/generative/runner.clj#L296" id="var-source">Source</a>
+  </div><div id="var-entry">
+    <br />
+    <hr />
+    <h2 id="clojure.test.generative.runner/var-tests">var-tests</h2>
+    <span id="var-type">multimethod</span><br />
+    <pre id="var-usage">No usage documentation available</pre>
+    <pre id="var-docstr">TestContainer.tests support for vars. To create custom test
+types, define vars that have :c.t.g/type metadata, and then add
+a matching var-tests method that returns a collection of tests.</pre>
+    
+    
+    <a href="https://github.com/clojure/test.generative/blob/f7d531ba4969ef21ddd898f78812624175ebd7cf/src/main/clojure/clojure/test/generative/runner.clj#L166" id="var-source">Source</a>
   </div>
 </div>
 
