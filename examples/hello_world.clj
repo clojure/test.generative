@@ -1,7 +1,6 @@
 (require
  '[clojure.data.generators :as gen]
  '[clojure.test.generative :as test :refer (defspec)]
- '[clojure.test.generative.event :as event]
  '[clojure.test.generative.runner :as runner])
 
 ;; generators have names that shadow core names of things generated
@@ -34,24 +33,42 @@
 ;; the next two steps are executed for you by the standard runner...
 
 ;; tests are extracted from vars
-(def tests  (runner/var-tests #'longs-are-closed-under-increment))
+(def tests  (runner/get-tests #'longs-are-closed-under-increment))
 
-;; install awesome console UI for tests
-(event/install-default-handlers)
+(first tests)
 
 ;; run test with some generated inputs
-(runner/run-for
+(runner/run-one
  (first tests)
- 1
- 1000)
+ 1000
+ [42])
 
-;; actual test data structure exposes a lazy infinite seq of inputs
-(take 2 ((:inputs (first tests))))
+(runner/run-n
+ 2
+ 1000
+ tests)
 
-;; the real story behind that console ui
-(reset! @#'event/handlers [])
-(runner/run-for
- (first tests)
- 1
- 10)
+;; repl-friendly use
+(runner/run-vars
+ 2 1000 #'longs-are-closed-under-increment)
+
+;; peek at what defspec tells us
+(meta #'longs-are-closed-under-increment)
+
+;; test that will fail
+(defspec collections-are-small
+  count
+  [^{:tag (gen/vec gen/short (gen/uniform 0 25))} l]
+  (assert (< % 20)))
+
+;; run as from REPL
+(runner/run-vars
+ 2 1000 #'collections-are-small)
+(ex-data *e)
+
+;; run as from suite
+(runner/run-suite {:threads 1 :msec 500} (runner/get-tests #'collections-are-small))
+
+
+
 

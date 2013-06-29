@@ -25,7 +25,7 @@
        read-string
        10000]])
 
-(defn config
+(defn- config
   []
   (reduce
    (fn [m [prop path coerce default]]
@@ -43,39 +43,27 @@
   (locking rnd
     (.nextInt rnd)))
 
-(defmulti var-tests
-  "TestContainer.tests support for vars. To create custom test
-   types, define vars that have :c.t.g/type metadata, and then add
-   a matching var-tests method that returns a collection of tests."
-  (fn [v] (:clojure.test.generative/type (meta v))))
-
-(defmethod var-tests :defspec [^clojure.lang.Var v]
-  [{:name  (-> (when-let [ns (.ns v)]
-                 (str ns "/" (.sym v))
-                 (.sym v))
-               symbol)
-    :f @v
-    :inputs (fn []
-              (repeatedly
-               (fn []
-                 (into [] (map #(%) (:clojure.test.generative/arg-fns (meta v)))))))}])
-
-(defmethod var-tests nil [v] nil)
-
 (defprotocol TestContainer
-  (tests
-   [_]
-   "Returns a collection of generative tests, where a test is a map with
-      :name     ns-qualified symbol
-      :f       fn to test
-      :inputs   fn returning a (possibly infinite!) sequence of inputs
-
-   All input generation should use and gen/*rnd*
-   if a source of pseudo-randomness is needed."))
+  (get-tests [_]))
 
 (extend-protocol TestContainer
-  clojure.lang.Var
-  (tests [v] (var-tests v)))
+  clojure.lang.Var 
+  (get-tests
+   [v]
+   (when-let [arg-fns (:clojure.test.generative/arg-fns (meta v))]
+     [{:test (-> (if-let [ns (.ns v)]
+                   (str ns "/" (.sym v))
+                   (.sym v))
+                 symbol)
+       :input-gen (fn []
+                    (repeatedly
+                     (fn []
+                       (into [] (map #(%) arg-fns)))))}]))
+
+  clojure.lang.MapEquivalence
+  (get-tests
+   [m] m))
+
 
 (defn find-vars-in-namespaces
   [& nses]
@@ -92,16 +80,17 @@
   "Run f (presumably for side effects) repeatedly on n threads,
    until msec has passed or somebody throws an exception.
    Returns as many status maps as seeds passed in."
-  [{:keys [name f inputs]} msec seeds]
-  (print (str "\n" name)) (flush)
-  (let [start (System/currentTimeMillis)
+  [{:keys [test input-gen]} msec seeds]
+  (prn) (prn test)
+  (let [f (eval test)
+        start (System/currentTimeMillis)
         futs (mapv
               #(future
                 (try
                  (binding [gen/*rnd* (java.util.Random. %)]
                    (loop [iter 0
-                          [input & more] (inputs)]
-                     (let [status {:iter iter :seed % :name name :input input}]
+                          [input & more] (input-gen)]
+                     (let [status {:iter iter :seed % :test test :input input}]
                        (if input
                          (let [failure (try
                                         (apply f input)
@@ -112,35 +101,46 @@
                            (cond
                             failure failure
                             (< now (+ start msec)) (recur (inc iter) more)
-                            :else status))
+                            :else (select-keys status [:test :seed :iter])))
                          (assoc status :exhausted true)))))))
               seeds)]
     (map deref futs)))
 
 (defn run-n
   "Run tests in parallel on nthreads, dividing msec equally between the tests."
-  [tests msec nthreads]
+  [nthreads msec tests]
   (mapcat #(run-one % (/ msec (count tests)) (repeatedly nthreads next-seed)) tests))
 
-(defn run-var
-  [var msec nthreads]
-  (run-n (var-tests var) msec nthreads))
+(defn failed?
+  "Does test result indicate a failure?"
+  [result]
+  (contains? result :exception))
+
+(defn run-vars
+  "Designed for interactive use.  Prints results to *out* and throws
+   on first failure encountered."
+  [nthreads msec & test-containers]
+  (doseq [result (run-n nthreads msec (mapcat get-tests test-containers))]
+    (if (failed? result)
+      (throw (ex-info "Generative test failed" result))
+      (prn result))))
 
 (defn dir-tests
   "Returns all tests in dirs"
-  [& dirs]
+  [dirs]
   (let [load (fn [s] (require s) s)]
     (->> (mapcat #(ns/find-namespaces-in-dir (java.io.File. ^String %)) dirs)
          (map load)
          (apply find-vars-in-namespaces)
-         (mapcat tests))))
+         (mapcat get-tests))))
 
-(defn run-tests-in-dirs
-  [{:keys [threads msec verbose]} & dirs]
+(defn run-suite
+  "Designed for test suite use."
+  [{:keys [threads msec verbose]} tests]
   (reduce
    (fn [{:keys [failures iters tests]} result]
      (if (or verbose (:exception result))
-       (pprint/pprint result)
+       (do (prn) (prn result))
        (print "."))
      (when (:exception result)
        (.printStackTrace ^Throwable (:exception result)))
@@ -149,14 +149,14 @@
       :iters (+ iters (:iter result))
       :tests (inc tests)})
    {:failures 0 :iters 0 :tests 0}
-   (run-n (apply dir-tests dirs) msec threads)))
+   (run-n threads msec tests)))
 
 (defn -main
   "Command line entry point. Calls System.exit!"
   [& dirs]
   (if (seq dirs)
     (try
-     (let [result (apply run-tests-in-dirs (config) dirs)]
+     (let [result (run-suite (config) (dir-tests dirs))]
        (println "\n" result)
        (System/exit (:failures result)))
      (catch Throwable t

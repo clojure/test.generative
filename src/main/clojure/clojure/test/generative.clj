@@ -49,7 +49,7 @@
    and runs validator-body forms (if any), which have access to both
    args and %. The defined function.
 
-   Args must have type hints (i.e. :tag metdata), which are
+   Args must have type hints (i.e. :tag metadata), which are
    interpreted as instructions for generating test input
    data. Unquoted names in type hints are resolved in the
    c.t.g.generators namespace, which has generator functions for
@@ -72,7 +72,6 @@
                                seq)]
     (throw (IllegalArgumentException. (str "Missing tags for " (seq (map first missing-tags)) " in " name))))
   `(defn ~(with-meta name (assoc (meta name)
-                            ::type :defspec
                             ::arg-fns (into [] (map #(-> % meta :tag tag->gen eval)  args))))
      ~(into [] (map (fn [a#] (with-meta a# (dissoc (meta a#) :tag))) args))
      (let [~'% (apply ~fn-to-test ~args)]
