@@ -8,9 +8,7 @@
 ;   You must not remove this notice, or any other, from this software.
 
 (ns clojure.test.generative
-  (:require [clojure.walk :as walk]
-            [clojure.test.generative.event :as event]
-            [clojure.test.generative.runner :as runner]))
+  (:require [clojure.walk :as walk]))
 
 (defn- fully-qualified
   "Qualify a name used in :tag metadata. Unqualified names are
@@ -44,29 +42,6 @@
     (if (seq? form)
       (list 'fn '[] form) 
       form)))
-
-(defmacro fail
-  [& args]
-  `(do
-     (runner/failed!)
-     ~(with-meta `(event/report-context :assert/fail
-                                        :level :warn
-                                        ~@args)
-        (meta &form))))
-
-(defmacro is
-  "Assert that v is true, otherwise fail the current generative
-   test (with optional msg)."
-  ([v] (with-meta `(is ~v nil) (meta &form)))
-  ([v msg]
-     `(let [~'actual ~v ~'expected '~v]
-        (if ~'actual
-          (do
-            (event/report :assert/pass :level :debug)
-            ~'actual)
-          ~(with-meta
-             `(fail ~@(when msg `[:message ~msg]))
-             (meta &form))))))
 
 (defmacro defspec
   "Defines a function named name that expects args. The defined
