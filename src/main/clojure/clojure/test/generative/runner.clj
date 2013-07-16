@@ -17,7 +17,7 @@
 
 (def ^:private config-mapping
      [["clojure.test.generative.threads"
-       [:threads]
+       [:nthreads]
        read-string
        (max 1 (dec (.availableProcessors (Runtime/getRuntime))))]
       ["clojure.test.generative.msec"
@@ -33,7 +33,6 @@
        (if (seq val)
          (assoc-in m path (coerce val))
          (assoc-in m path default))))
-   {}
    config-mapping))
 
 (def ^:private ^java.util.Random rnd (java.util.Random. (System/currentTimeMillis)))
@@ -43,10 +42,10 @@
   (locking rnd
     (.nextInt rnd)))
 
-(defprotocol TestContainer
+(defprotocol Testable
   (get-tests [_]))
 
-(extend-protocol TestContainer
+(extend-protocol Testable
   clojure.lang.Var 
   (get-tests
    [v]
@@ -65,23 +64,22 @@
    [m] m))
 
 
-(defn find-vars-in-namespaces
+(defn- find-vars-in-namespaces
   [& nses]
   (when nses
     (reduce (fn [v ns] (into v (vals (ns-interns ns)))) [] nses)))
 
-(defn find-vars-in-dirs
+(defn- find-vars-in-dirs
   [& dirs]
   (let [nses (mapcat #(ns/find-namespaces-in-dir (java.io.File. ^String %)) dirs)]
     (doseq [ns nses] (require ns))
     (apply find-vars-in-namespaces nses)))
 
-(defn run-one
+(defn- run-one
   "Run f (presumably for side effects) repeatedly on n threads,
    until msec has passed or somebody throws an exception.
    Returns as many status maps as seeds passed in."
-  [{:keys [test input-gen]} msec seeds]
-  (prn) (prn test)
+  [{:keys [test input-gen]} {:keys [msec seeds]}]
   (let [f (eval test)
         start (System/currentTimeMillis)
         futs (mapv
@@ -106,24 +104,24 @@
               seeds)]
     (map deref futs)))
 
-(defn run-n
-  "Run tests in parallel on nthreads, dividing msec equally between the tests."
-  [nthreads msec tests]
-  (mapcat #(run-one % (/ msec (count tests)) (repeatedly nthreads next-seed)) tests))
-
-(defn failed?
+(defn- failed?
   "Does test result indicate a failure?"
   [result]
   (contains? result :exception))
 
-(defn run-vars
-  "Designed for interactive use.  Prints results to *out* and throws
-   on first failure encountered."
-  [nthreads msec & test-containers]
-  (doseq [result (run-n nthreads msec (mapcat get-tests test-containers))]
-    (if (failed? result)
-      (throw (ex-info "Generative test failed" result))
-      (prn result))))
+(defn- run-n
+  "Run tests in parallel on nthreads, dividing msec equally between the tests.
+   Returns a list of maps of :iter, :seed, :test."
+  [{:keys [nthreads msec]} tests]
+  (mapcat #(run-one %
+                    {:msec (/ msec (count tests))
+                     :seeds (repeatedly nthreads next-seed)})
+          tests))
+
+(defn- prf
+  "Print and flush."
+  [s]
+  (print s) (flush))
 
 (defn dir-tests
   "Returns all tests in dirs"
@@ -134,22 +132,41 @@
          (apply find-vars-in-namespaces)
          (mapcat get-tests))))
 
+(defn inputs
+  "For interactive use.  Returns an infinite sequence of inputs for
+   a test."
+  [test]
+  ((:input-gen test)))
+
+(defn run
+  "Designed for interactive use.  Prints results to *out* and throws
+   on first failure encountered."
+  [nthreads msec & test-containers]
+  (doseq [result (run-n {:nthreads nthreads
+                         :msec msec}
+                        (mapcat get-tests test-containers))]
+    (if (failed? result)
+      (throw (ex-info "Generative test failed" result))
+      (prn result))))
+
 (defn run-suite
   "Designed for test suite use."
-  [{:keys [threads msec verbose]} tests]
-  (reduce
-   (fn [{:keys [failures iters tests]} result]
-     (if (or verbose (:exception result))
-       (do (prn) (prn result))
-       (print "."))
-     (when (:exception result)
-       (.printStackTrace ^Throwable (:exception result)))
-     (flush)
-     {:failures (+ failures (if (:exception result) 1 0))
-      :iters (+ iters (:iter result))
-      :tests (inc tests)})
-   {:failures 0 :iters 0 :tests 0}
-   (run-n threads msec tests)))
+  [{:keys [nthreads msec progress]} tests]
+  (let [progress (or progress #(prf "."))]
+    (reduce
+     (fn [{:keys [failures iters tests]} result]
+       (when (:exception result)
+         (.printStackTrace ^Throwable (:exception result)))
+       (if (:exception result)
+         (prn result)
+         (progress))
+       {:failures (+ failures (if (:exception result) 1 0))
+        :iters (+ iters (:iter result))
+        :tests (+ tests (/ 1 nthreads))})
+     {:failures 0 :iters 0 :tests 0}
+     (run-n {:nthreads nthreads
+             :msec msec}
+            tests))))
 
 (defn -main
   "Command line entry point. Calls System.exit!"
