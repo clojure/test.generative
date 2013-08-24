@@ -33,6 +33,7 @@
        (if (seq val)
          (assoc-in m path (coerce val))
          (assoc-in m path default))))
+   {}
    config-mapping))
 
 (def ^:private ^java.util.Random rnd (java.util.Random. (System/currentTimeMillis)))
@@ -111,7 +112,7 @@
 
 (defn- run-n
   "Run tests in parallel on nthreads, dividing msec equally between the tests.
-   Returns a list of maps of :iter, :seed, :test."
+   Returns a list of maps of :iter, :seed"
   [{:keys [nthreads msec]} tests]
   (mapcat #(run-one %
                     {:msec (/ msec (count tests))
@@ -152,21 +153,24 @@
 (defn run-suite
   "Designed for test suite use."
   [{:keys [nthreads msec progress]} tests]
-  (let [progress (or progress #(prf "."))]
-    (reduce
-     (fn [{:keys [failures iters tests]} result]
-       (when (:exception result)
-         (.printStackTrace ^Throwable (:exception result)))
-       (if (:exception result)
-         (prn result)
-         (progress))
-       {:failures (+ failures (if (:exception result) 1 0))
-        :iters (+ iters (:iter result))
-        :tests (+ tests (/ 1 nthreads))})
-     {:failures 0 :iters 0 :tests 0}
-     (run-n {:nthreads nthreads
-             :msec msec}
-            tests))))
+  (let [progress (or progress #(prf "."))
+        ret (reduce
+             (fn [{:keys [failures iters nresults]} result]
+               (when (:exception result)
+                 (.printStackTrace ^Throwable (:exception result)))
+               (if (:exception result)
+                 (prn result)
+                 (progress))
+               {:failures (+ failures (if (:exception result) 1 0))
+                :iters (+ iters (:iter result))
+                :nresults (+ nresults 1)})
+             {:failures 0 :iters 0 :nresults 0}
+             (run-n {:nthreads nthreads
+                     :msec msec}
+                    tests))]
+    (-> ret
+        (assoc :tests (/ (:nresults ret) nthreads))
+        (dissoc :nresults))))
 
 (defn -main
   "Command line entry point. Calls System.exit!"
