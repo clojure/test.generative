@@ -39,7 +39,23 @@ and a validator:
 To generate test data, see the fns in the generators namespace. Note
 that these functions shadow a bunch of clojure.core names.
 
-You can configure the runner with Java system properties:
+Running Interactively During Development
+========================================
+
+Specify the number of threads, the number of msec, and one or more
+vars to test:
+
+    (runner/run 2 1000 #'my/test-var)
+
+
+Running in a CI environment
+========================================
+
+Wire your runner to call runner/-main with a list of directories where
+tests can be found.  You can see bin/test.clj for an example.
+
+You can use the following system properties to control the intensity
+of your test
 
 <table>
   <tr>
@@ -63,6 +79,16 @@ Developer Information
 * [Continuous Integration](http://build.clojure.org/job/test.generative/)
 
 * [Compatibility Test Matrix](http://build.clojure.org/job/test.generative-test-matrix/)
+
+Related Projects
+========================================
+
+* [ClojureCheck](https://bitbucket.org/kotarak/clojurecheck) adds
+  property based testing to clojure.test following the lines of
+  [QuickCheck](http://en.wikipedia.org/wiki/QuickCheck) for Haskell.
+
+* [simple-check](https://github.com/reiddraper/simple-check) is a
+  Clojure property-based testing tool inspired by QuickCheck.
 
 Copyright and License
 ========================================
