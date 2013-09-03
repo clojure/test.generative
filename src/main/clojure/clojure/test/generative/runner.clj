@@ -11,7 +11,8 @@
   (:require
    [clojure.pprint :as pprint]
    [clojure.tools.namespace :as ns]
-   [clojure.data.generators :as gen]))
+   [clojure.data.generators :as gen]
+   [clojure.test.generative :as tgen]))
 
 (set! *warn-on-reflection* true)
 
@@ -50,19 +51,22 @@
   clojure.lang.Var 
   (get-tests
    [v]
-   (when-let [arg-fns (:clojure.test.generative/arg-fns (meta v))]
-     [{:test (-> (if-let [ns (.ns v)]
-                   (str ns "/" (.sym v))
-                   (.sym v))
-                 symbol)
-       :input-gen (fn []
-                    (repeatedly
-                     (fn []
-                       (into [] (map #(%) arg-fns)))))}]))
+   (let [m (meta v)
+         arg-fns (::tgen/arg-fns m)
+         specs (::tgen/specs m)]
+     (cond
+      arg-fns
+      [{:test (-> (if-let [ns (.ns v)]
+                    (str ns "/" (.sym v))
+                    (.sym v))
+                  symbol)
+        :input-gen (fn []
+                     (repeatedly
+                      (fn []
+                        (into [] (map #(%) arg-fns)))))}]
 
-  clojure.lang.MapEquivalence
-  (get-tests
-   [m] m))
+      specs
+      @v))))
 
 
 (defn- find-vars-in-namespaces

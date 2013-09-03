@@ -9,7 +9,9 @@
 
 (ns clojure.test.math-test
   (:use clojure.test.generative)
-  (:require [clojure.data.generators :as gen]))
+  (:require
+   [clojure.data.generators :as gen]
+   [clojure.test.generative :as tgen]))
 
 (defn integer
   "Distribution of integers biased towards the small, but
@@ -85,3 +87,14 @@
       (assert (= a
                  (+ (* q d) r)
                  (unchecked-add (unchecked-multiply q d) r))))))
+
+(defn inc'-doesnt-overflow
+  [a]
+  (assert (< a (inc' a))))
+
+;; You can mark a var containing "raw" specs with ::tgen/specs to
+;; include it in the test suite.
+(def ^::tgen/specs
+  inc'-doesnt-overflow-specs
+  [{:test 'clojure.test.math-test/inc'-doesnt-overflow
+    :input-gen #(map vector [Long/MIN_VALUE -1 0 1 Long/MAX_VALUE])}])

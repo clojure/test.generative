@@ -39,7 +39,19 @@ and a validator:
 To generate test data, see the fns in the generators namespace. Note
 that these functions shadow a bunch of clojure.core names.
 
-Running Interactively During Development
+You can also create the underlying test data structures directly,
+marking vars with :clojure.test.generative/specs so they are picked up
+by the runner.  This can be useful e.g. to model relationships between
+input parameters, or to specify a finite list of special cases. The
+example below specifies five specific one-argument arg lists:
+
+    (def ^::tgen/specs
+      inc'-doesnt-overflow-specs
+      [{:test 'clojure.test.math-test/inc'-doesnt-overflow
+        :input-gen #(map vector [Long/MIN_VALUE -1 0 1 Long/MAX_VALUE])}])
+
+
+Running Interactively During Development 
 ========================================
 
 Specify the number of threads, the number of msec, and one or more
