@@ -6,7 +6,7 @@
    :name "clojure.test.generative",
    :doc nil}
   {:source-url
-   "https://github.com/clojure/test.generative/blob/d196631ff5f8a13360900f228f74d8587905f46b/src/main/clojure/clojure/test/generative/runner.clj",
+   "https://github.com/clojure/test.generative/blob/b1620a4fd76004d7b2dbd2a947d2cb6f2cc5ff3c/src/main/clojure/clojure/test/generative/runner.clj",
    :wiki-url
    "http://clojure.github.com/test.generative/clojure.test.generative.runner-api.html",
    :name "clojure.test.generative.runner",
@@ -30,66 +30,105 @@
    :name "-main",
    :namespace "clojure.test.generative.runner",
    :source-url
-   "https://github.com/clojure/test.generative/blob/d196631ff5f8a13360900f228f74d8587905f46b/src/main/clojure/clojure/test/generative/runner.clj#L179",
+   "https://github.com/clojure/test.generative/blob/b1620a4fd76004d7b2dbd2a947d2cb6f2cc5ff3c/src/main/clojure/clojure/test/generative/runner.clj#L203",
    :raw-source-url
-   "https://github.com/clojure/test.generative/raw/d196631ff5f8a13360900f228f74d8587905f46b/src/main/clojure/clojure/test/generative/runner.clj",
+   "https://github.com/clojure/test.generative/raw/b1620a4fd76004d7b2dbd2a947d2cb6f2cc5ff3c/src/main/clojure/clojure/test/generative/runner.clj",
    :wiki-url
    "http://clojure.github.com/test.generative//clojure.test.generative-api.html#clojure.test.generative.runner/-main",
    :doc "Command line entry point. Calls System.exit!",
    :var-type "function",
-   :line 179,
+   :line 203,
+   :file "src/main/clojure/clojure/test/generative/runner.clj"}
+  {:arglists ([]),
+   :name "config",
+   :namespace "clojure.test.generative.runner",
+   :source-url
+   "https://github.com/clojure/test.generative/blob/b1620a4fd76004d7b2dbd2a947d2cb6f2cc5ff3c/src/main/clojure/clojure/test/generative/runner.clj#L28",
+   :raw-source-url
+   "https://github.com/clojure/test.generative/raw/b1620a4fd76004d7b2dbd2a947d2cb6f2cc5ff3c/src/main/clojure/clojure/test/generative/runner.clj",
+   :wiki-url
+   "http://clojure.github.com/test.generative//clojure.test.generative-api.html#clojure.test.generative.runner/config",
+   :doc "Returns runner configuration derived from system properties.",
+   :var-type "function",
+   :line 28,
    :file "src/main/clojure/clojure/test/generative/runner.clj"}
   {:arglists ([dirs]),
    :name "dir-tests",
    :namespace "clojure.test.generative.runner",
    :source-url
-   "https://github.com/clojure/test.generative/blob/d196631ff5f8a13360900f228f74d8587905f46b/src/main/clojure/clojure/test/generative/runner.clj#L131",
+   "https://github.com/clojure/test.generative/blob/b1620a4fd76004d7b2dbd2a947d2cb6f2cc5ff3c/src/main/clojure/clojure/test/generative/runner.clj#L155",
    :raw-source-url
-   "https://github.com/clojure/test.generative/raw/d196631ff5f8a13360900f228f74d8587905f46b/src/main/clojure/clojure/test/generative/runner.clj",
+   "https://github.com/clojure/test.generative/raw/b1620a4fd76004d7b2dbd2a947d2cb6f2cc5ff3c/src/main/clojure/clojure/test/generative/runner.clj",
    :wiki-url
    "http://clojure.github.com/test.generative//clojure.test.generative-api.html#clojure.test.generative.runner/dir-tests",
    :doc "Returns all tests in dirs",
    :var-type "function",
-   :line 131,
+   :line 155,
    :file "src/main/clojure/clojure/test/generative/runner.clj"}
   {:arglists ([test]),
    :name "inputs",
    :namespace "clojure.test.generative.runner",
    :source-url
-   "https://github.com/clojure/test.generative/blob/d196631ff5f8a13360900f228f74d8587905f46b/src/main/clojure/clojure/test/generative/runner.clj#L140",
+   "https://github.com/clojure/test.generative/blob/b1620a4fd76004d7b2dbd2a947d2cb6f2cc5ff3c/src/main/clojure/clojure/test/generative/runner.clj#L164",
    :raw-source-url
-   "https://github.com/clojure/test.generative/raw/d196631ff5f8a13360900f228f74d8587905f46b/src/main/clojure/clojure/test/generative/runner.clj",
+   "https://github.com/clojure/test.generative/raw/b1620a4fd76004d7b2dbd2a947d2cb6f2cc5ff3c/src/main/clojure/clojure/test/generative/runner.clj",
    :wiki-url
    "http://clojure.github.com/test.generative//clojure.test.generative-api.html#clojure.test.generative.runner/inputs",
    :doc
    "For interactive use.  Returns an infinite sequence of inputs for\na test.",
    :var-type "function",
-   :line 140,
+   :line 164,
    :file "src/main/clojure/clojure/test/generative/runner.clj"}
+  {:file "src/main/clojure/clojure/test/generative/runner.clj",
+   :raw-source-url
+   "https://github.com/clojure/test.generative/raw/b1620a4fd76004d7b2dbd2a947d2cb6f2cc5ff3c/src/main/clojure/clojure/test/generative/runner.clj",
+   :source-url
+   "https://github.com/clojure/test.generative/blob/b1620a4fd76004d7b2dbd2a947d2cb6f2cc5ff3c/src/main/clojure/clojure/test/generative/runner.clj#L143",
+   :wiki-url
+   "http://clojure.github.com/test.generative//clojure.test.generative-api.html#clojure.test.generative.runner/prf",
+   :namespace "clojure.test.generative.runner",
+   :line 143,
+   :var-type "var",
+   :doc "Print and flush.",
+   :name "prf"}
   {:arglists ([nthreads msec & test-containers]),
    :name "run",
    :namespace "clojure.test.generative.runner",
    :source-url
-   "https://github.com/clojure/test.generative/blob/d196631ff5f8a13360900f228f74d8587905f46b/src/main/clojure/clojure/test/generative/runner.clj#L146",
+   "https://github.com/clojure/test.generative/blob/b1620a4fd76004d7b2dbd2a947d2cb6f2cc5ff3c/src/main/clojure/clojure/test/generative/runner.clj#L170",
    :raw-source-url
-   "https://github.com/clojure/test.generative/raw/d196631ff5f8a13360900f228f74d8587905f46b/src/main/clojure/clojure/test/generative/runner.clj",
+   "https://github.com/clojure/test.generative/raw/b1620a4fd76004d7b2dbd2a947d2cb6f2cc5ff3c/src/main/clojure/clojure/test/generative/runner.clj",
    :wiki-url
    "http://clojure.github.com/test.generative//clojure.test.generative-api.html#clojure.test.generative.runner/run",
    :doc
    "Designed for interactive use.  Prints results to *out* and throws\non first failure encountered.",
    :var-type "function",
-   :line 146,
+   :line 170,
    :file "src/main/clojure/clojure/test/generative/runner.clj"}
   {:arglists ([{:keys [nthreads msec progress]} tests]),
    :name "run-suite",
    :namespace "clojure.test.generative.runner",
    :source-url
-   "https://github.com/clojure/test.generative/blob/d196631ff5f8a13360900f228f74d8587905f46b/src/main/clojure/clojure/test/generative/runner.clj#L157",
+   "https://github.com/clojure/test.generative/blob/b1620a4fd76004d7b2dbd2a947d2cb6f2cc5ff3c/src/main/clojure/clojure/test/generative/runner.clj#L181",
    :raw-source-url
-   "https://github.com/clojure/test.generative/raw/d196631ff5f8a13360900f228f74d8587905f46b/src/main/clojure/clojure/test/generative/runner.clj",
+   "https://github.com/clojure/test.generative/raw/b1620a4fd76004d7b2dbd2a947d2cb6f2cc5ff3c/src/main/clojure/clojure/test/generative/runner.clj",
    :wiki-url
    "http://clojure.github.com/test.generative//clojure.test.generative-api.html#clojure.test.generative.runner/run-suite",
    :doc "Designed for test suite use.",
    :var-type "function",
-   :line 157,
+   :line 181,
+   :file "src/main/clojure/clojure/test/generative/runner.clj"}
+  {:arglists ([f] [f agt]),
+   :name "serialized",
+   :namespace "clojure.test.generative.runner",
+   :source-url
+   "https://github.com/clojure/test.generative/blob/b1620a4fd76004d7b2dbd2a947d2cb6f2cc5ff3c/src/main/clojure/clojure/test/generative/runner.clj#L128",
+   :raw-source-url
+   "https://github.com/clojure/test.generative/raw/b1620a4fd76004d7b2dbd2a947d2cb6f2cc5ff3c/src/main/clojure/clojure/test/generative/runner.clj",
+   :wiki-url
+   "http://clojure.github.com/test.generative//clojure.test.generative-api.html#clojure.test.generative.runner/serialized",
+   :doc
+   "Returns a function that calls f for side effects, async,\nserialized by an agent",
+   :var-type "function",
+   :line 128,
    :file "src/main/clojure/clojure/test/generative/runner.clj"})}
