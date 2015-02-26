@@ -6,7 +6,7 @@ Generative test runner.
 Releases and Dependency Information
 ========================================
 
-Latest stable release: 0.5.0
+Latest stable release: 0.5.2
 
 * [All Released Versions](http://search.maven.org/#search%7Cgav%7C1%7Cg%3A%22org.clojure%22%20AND%20a%3A%22test.generative%22)
 
@@ -14,14 +14,14 @@ Latest stable release: 0.5.0
 
 [Leiningen](https://github.com/technomancy/leiningen) dependency information:
 
-    [org.clojure/test.generative "0.5.0"]
+    [org.clojure/test.generative "0.5.2"]
 
 [Maven](http://maven.apache.org/) dependency information:
 
     <dependency>
       <groupId>org.clojure</groupId>
       <artifactId>test.generative</artifactId>
-      <version>0.5.0</version>
+      <version>0.5.2</version>
     </dependency>
 
 
