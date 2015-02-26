@@ -9,7 +9,7 @@
 
 (ns clojure.test.generative.runner
   (:require
-   [clojure.tools.namespace :as ns]
+   [clojure.tools.namespace.find :as ns]
    [clojure.data.generators :as gen]
    [clojure.test.generative :as tgen]))
 
