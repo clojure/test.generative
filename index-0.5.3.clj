@@ -79,18 +79,19 @@
    :namespace "clojure.test.generative.runner",
    :wiki-url
    "http://clojure.github.com/test.generative//clojure.test.generative-api.html#clojure.test.generative.runner/inputs"}
-  {:name "prf",
-   :doc "Print and flush.",
-   :var-type "var",
-   :line 143,
-   :namespace "clojure.test.generative.runner",
-   :wiki-url
-   "http://clojure.github.com/test.generative//clojure.test.generative-api.html#clojure.test.generative.runner/prf",
+  {:raw-source-url
+   "https://github.com/clojure/test.generative/raw/635f98e948e6ec585fb575809b1d62d9593ae402/src/main/clojure/clojure/test/generative/runner.clj",
+   :name "prf",
+   :file "src/main/clojure/clojure/test/generative/runner.clj",
    :source-url
    "https://github.com/clojure/test.generative/blob/635f98e948e6ec585fb575809b1d62d9593ae402/src/main/clojure/clojure/test/generative/runner.clj#L143",
-   :raw-source-url
-   "https://github.com/clojure/test.generative/raw/635f98e948e6ec585fb575809b1d62d9593ae402/src/main/clojure/clojure/test/generative/runner.clj",
-   :file "src/main/clojure/clojure/test/generative/runner.clj"}
+   :line 143,
+   :var-type "var",
+   :arglists nil,
+   :doc "Print and flush.",
+   :namespace "clojure.test.generative.runner",
+   :wiki-url
+   "http://clojure.github.com/test.generative//clojure.test.generative-api.html#clojure.test.generative.runner/prf"}
   {:raw-source-url
    "https://github.com/clojure/test.generative/raw/635f98e948e6ec585fb575809b1d62d9593ae402/src/main/clojure/clojure/test/generative/runner.clj",
    :name "run",
