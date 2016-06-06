@@ -58,6 +58,9 @@ namespace.
       
     </div>
   </div><div class="toc-section" style="margin-left: 1em;">
+    <a style="margin-top: 3px;" href="#"></a>
+    
+  </div><div class="toc-section" style="margin-left: 1em;">
     <a style="margin-top: 3px;" href="#clojure.test.generative.runner">clojure.test.generative.runner</a>
     <div class="toc-entry" style="margin-left: 1em;">
       <a href="#clojure.test.generative.runner/-main" class="toc-entry-anchor">-main</a>
@@ -134,11 +137,13 @@ namespace, allowing arbitrary generators, e.g.
 
 The function c.t.g.runner/run-iter takes a var naming a test, and runs
 a single test iteration, generating inputs based on the arg type hints.</pre>
+    <pre id="var-specs"></pre>
     
     
     <a id="var-source" href="https://github.com/clojure/test.generative/blob/fe4922b988df76fff56e287eec41e7d5183b7a40/src/main/clojure/clojure/test/generative.clj#L46">Source</a>
   </div>
 </div>
+
 <br />
 <h2 id="clojure.test.generative.runner">clojure.test.generative.runner</h2>
 <pre id="namespace-docstr"></pre>
@@ -158,6 +163,7 @@ a single test iteration, generating inputs based on the arg type hints.</pre>
     <pre id="var-usage">Usage: (-main &amp; dirs)
 </pre>
     <pre id="var-docstr">Command line entry point. Calls System.exit!</pre>
+    <pre id="var-specs"></pre>
     
     
     <a id="var-source" href="https://github.com/clojure/test.generative/blob/635f98e948e6ec585fb575809b1d62d9593ae402/src/main/clojure/clojure/test/generative/runner.clj#L203">Source</a>
@@ -169,6 +175,7 @@ a single test iteration, generating inputs based on the arg type hints.</pre>
     <pre id="var-usage">Usage: (config)
 </pre>
     <pre id="var-docstr">Returns runner configuration derived from system properties.</pre>
+    <pre id="var-specs"></pre>
     
     
     <a id="var-source" href="https://github.com/clojure/test.generative/blob/635f98e948e6ec585fb575809b1d62d9593ae402/src/main/clojure/clojure/test/generative/runner.clj#L28">Source</a>
@@ -180,6 +187,7 @@ a single test iteration, generating inputs based on the arg type hints.</pre>
     <pre id="var-usage">Usage: (dir-tests dirs)
 </pre>
     <pre id="var-docstr">Returns all tests in dirs</pre>
+    <pre id="var-specs"></pre>
     
     
     <a id="var-source" href="https://github.com/clojure/test.generative/blob/635f98e948e6ec585fb575809b1d62d9593ae402/src/main/clojure/clojure/test/generative/runner.clj#L155">Source</a>
@@ -192,6 +200,7 @@ a single test iteration, generating inputs based on the arg type hints.</pre>
 </pre>
     <pre id="var-docstr">For interactive use.  Returns an infinite sequence of inputs for
 a test.</pre>
+    <pre id="var-specs"></pre>
     
     
     <a id="var-source" href="https://github.com/clojure/test.generative/blob/635f98e948e6ec585fb575809b1d62d9593ae402/src/main/clojure/clojure/test/generative/runner.clj#L164">Source</a>
@@ -202,6 +211,7 @@ a test.</pre>
     <span id="var-type">var</span><br />
     <pre id="var-usage"></pre>
     <pre id="var-docstr">Print and flush.</pre>
+    <pre id="var-specs"></pre>
     
     
     <a id="var-source" href="https://github.com/clojure/test.generative/blob/635f98e948e6ec585fb575809b1d62d9593ae402/src/main/clojure/clojure/test/generative/runner.clj#L143">Source</a>
@@ -214,6 +224,7 @@ a test.</pre>
 </pre>
     <pre id="var-docstr">Designed for interactive use.  Prints results to *out* and throws
 on first failure encountered.</pre>
+    <pre id="var-specs"></pre>
     
     
     <a id="var-source" href="https://github.com/clojure/test.generative/blob/635f98e948e6ec585fb575809b1d62d9593ae402/src/main/clojure/clojure/test/generative/runner.clj#L170">Source</a>
@@ -225,6 +236,7 @@ on first failure encountered.</pre>
     <pre id="var-usage">Usage: (run-suite {:keys [nthreads msec progress]} tests)
 </pre>
     <pre id="var-docstr">Designed for test suite use.</pre>
+    <pre id="var-specs"></pre>
     
     
     <a id="var-source" href="https://github.com/clojure/test.generative/blob/635f98e948e6ec585fb575809b1d62d9593ae402/src/main/clojure/clojure/test/generative/runner.clj#L181">Source</a>
@@ -238,6 +250,7 @@ on first failure encountered.</pre>
 </pre>
     <pre id="var-docstr">Returns a function that calls f for side effects, async,
 serialized by an agent</pre>
+    <pre id="var-specs"></pre>
     
     
     <a id="var-source" href="https://github.com/clojure/test.generative/blob/635f98e948e6ec585fb575809b1d62d9593ae402/src/main/clojure/clojure/test/generative/runner.clj#L128">Source</a>
