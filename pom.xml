@@ -60,12 +60,12 @@
     <dependency>
       <groupId>org.clojure</groupId>
       <artifactId>tools.namespace</artifactId>
-      <version>0.2.10</version>
+      <version>1.0.0</version>
     </dependency>
     <dependency>
       <groupId>org.clojure</groupId>
       <artifactId>data.generators</artifactId>
-      <version>0.1.2</version>
+      <version>1.0.0</version>
     </dependency>
   </dependencies>
 
