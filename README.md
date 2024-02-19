@@ -6,27 +6,26 @@ Generative test runner.
 Releases and Dependency Information
 ========================================
 
-Latest stable release: 1.0.0
+Latest stable release: 1.1.0
 
-* [All Released Versions](http://search.maven.org/#search%7Cgav%7C1%7Cg%3A%22org.clojure%22%20AND%20a%3A%22test.generative%22)
-
+* [All Released Versions](https://search.maven.org/#search%7Cgav%7C1%7Cg%3A%22org.clojure%22%20AND%20a%3A%22test.generative%22)
 * [Development Snapshot Versions](https://oss.sonatype.org/index.html#nexus-search;gav~org.clojure~test.generative~~~)
 
-[CLI/`deps.edn`](https://clojure.org/reference/deps_and_cli) dependency information:
+[CLI/`deps.edn`](https://clojure.org/reference/deps_edn) dependency information:
 ```clojure
-org.clojure/test.generative {:mvn/version "1.0.0"}
+org.clojure/test.generative {:mvn/version "1.1.0"}
 ```
 
 [Leiningen](https://github.com/technomancy/leiningen) dependency information:
 
-    [org.clojure/test.generative "1.0.0"]
+    [org.clojure/test.generative "1.1.0"]
 
-[Maven](http://maven.apache.org/) dependency information:
+[Maven](https://maven.apache.org/) dependency information:
 
     <dependency>
       <groupId>org.clojure</groupId>
       <artifactId>test.generative</artifactId>
-      <version>1.0.0</version>
+      <version>1.1.0</version>
     </dependency>
 
 
@@ -98,11 +97,11 @@ Related Projects
 
 * [ClojureCheck](https://bitbucket.org/kotarak/clojurecheck) adds
   property based testing to clojure.test following the lines of
-  [QuickCheck](http://en.wikipedia.org/wiki/QuickCheck) for Haskell.
+  [QuickCheck](https://en.wikipedia.org/wiki/QuickCheck) for Haskell.
 * [simple-check](https://github.com/reiddraper/simple-check) is a
   Clojure property-based testing tool inspired by QuickCheck.
 
 Copyright and License
 ========================================
 
-Copyright (c) 2012-2023 Rich Hickey. All rights reserved.  The use and distribution terms for this software are covered by the Eclipse Public License 1.0 (https://opensource.org/license/epl-1-0/) which can be found in the file epl-v10.html at the root of this distribution. By using this software in any fashion, you are agreeing to be bound bythe terms of this license.  You must not remove this notice, or any other, from this software.
+Copyright (c) Rich Hickey. All rights reserved.  The use and distribution terms for this software are covered by the Eclipse Public License 1.0 (https://opensource.org/license/epl-1-0/) which can be found in the file epl-v10.html at the root of this distribution. By using this software in any fashion, you are agreeing to be bound bythe terms of this license.  You must not remove this notice, or any other, from this software.
