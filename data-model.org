@@ -4,7 +4,7 @@
 | tstamp      | long               | msec since epoch                       |
 | thread      | long               | thread id                              |
 | pid         | long               | process id                             |
-| level       | keyword enum       | severiry level                         |
+| level       | keyword enum       | severity level                         |
 | type        | namespaced keyword | drive extended interpretation          |
 | locals      | map                | local bindings                         |
 | file        | string             | file path                              |
