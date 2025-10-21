@@ -3,6 +3,7 @@
   <artifactId>test.generative</artifactId>
   <version>1.1.1-SNAPSHOT</version>
   <name>test.generative</name>
+  <description>Generative test runner for Clojure.</description>
 
   <parent>
     <groupId>org.clojure</groupId>
