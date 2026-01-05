@@ -1,7 +1,7 @@
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
   <modelVersion>4.0.0</modelVersion>
   <artifactId>test.generative</artifactId>
-  <version>1.1.1</version>
+  <version>1.1.2-SNAPSHOT</version>
   <name>test.generative</name>
   <description>Generative test runner for Clojure.</description>
 
@@ -26,7 +26,7 @@
     <connection>scm:git:git@github.com:clojure/test.generative.git</connection>
     <developerConnection>scm:git:git@github.com:clojure/test.generative.git</developerConnection>
     <url>git@github.com:clojure/test.generative.git</url>
-    <tag>v1.1.1</tag>
+    <tag>HEAD</tag>
   </scm>
 
   <repositories>
