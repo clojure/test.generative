@@ -6,26 +6,26 @@ Generative test runner.
 Releases and Dependency Information
 ========================================
 
-Latest stable release: 1.1.0
+Latest stable release: 1.1.1
 
 * [All Released Versions](https://search.maven.org/#search%7Cgav%7C1%7Cg%3A%22org.clojure%22%20AND%20a%3A%22test.generative%22)
 * [Development Snapshot Versions](https://oss.sonatype.org/index.html#nexus-search;gav~org.clojure~test.generative~~~)
 
 [CLI/`deps.edn`](https://clojure.org/reference/deps_edn) dependency information:
 ```clojure
-org.clojure/test.generative {:mvn/version "1.1.0"}
+org.clojure/test.generative {:mvn/version "1.1.1"}
 ```
 
 [Leiningen](https://github.com/technomancy/leiningen) dependency information:
 
-    [org.clojure/test.generative "1.1.0"]
+    [org.clojure/test.generative "1.1.1"]
 
 [Maven](https://maven.apache.org/) dependency information:
 
     <dependency>
       <groupId>org.clojure</groupId>
       <artifactId>test.generative</artifactId>
-      <version>1.1.0</version>
+      <version>1.1.1</version>
     </dependency>
 
 
